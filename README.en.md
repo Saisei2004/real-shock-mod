@@ -5,7 +5,7 @@
 # RE:AL SHOCK MOD
 
 ![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-2f81f7)
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776ab)
+![Python](https://img.shields.io/badge/Python-3.14%2B-3776ab)
 ![BLE](https://img.shields.io/badge/BLE-COOSPO%20H6-86f0a8)
 ![REFramework](https://img.shields.io/badge/REFramework-Lua%20Bridge-e3b45a)
 ![ESP32](https://img.shields.io/badge/ESP32-Local%20HTTP-e65a4f)
@@ -39,7 +39,7 @@ Japanese version: [README.md](README.md)
 | Link | What it is |
 |---|---|
 | [Git for Windows](https://git-scm.com/download/win) | Required for `git clone` |
-| [Python 3.10+](https://www.python.org/downloads/windows/) | Runs the local RE:AL SHOCK MOD server |
+| [Python 3.14+](https://www.python.org/downloads/windows/) | Runs the local RE:AL SHOCK MOD server |
 | [REFramework Releases](https://github.com/praydog/REFramework/releases) | Mod framework used to read the game state. The installer script can also install it |
 
 ## Fastest Setup
@@ -48,7 +48,7 @@ Open PowerShell and install the basic tools if they are missing.
 
 ```powershell
 winget install --id Git.Git -e
-winget install --id Python.Python.3.12 -e
+winget install --id Python.Python.3.14 -e
 ```
 
 Then run these commands in any folder where you want the project.

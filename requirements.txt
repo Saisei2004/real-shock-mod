@@ -1,2 +1,2 @@
-aiohttp>=3.9
-bleak>=0.22
+aiohttp>=3.13.5
+bleak>=3.0.2

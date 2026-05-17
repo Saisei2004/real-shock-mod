@@ -5,7 +5,7 @@
 # RE:AL SHOCK MOD
 
 ![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-2f81f7)
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776ab)
+![Python](https://img.shields.io/badge/Python-3.14%2B-3776ab)
 ![BLE](https://img.shields.io/badge/BLE-COOSPO%20H6-86f0a8)
 ![REFramework](https://img.shields.io/badge/REFramework-Lua%20Bridge-e3b45a)
 ![ESP32](https://img.shields.io/badge/ESP32-Local%20HTTP-e65a4f)
@@ -39,7 +39,7 @@ English version: [README.en.md](README.en.md)
 | リンク | 何か |
 |---|---|
 | [Git for Windows](https://git-scm.com/download/win) | `git clone` するために必要 |
-| [Python 3.10+](https://www.python.org/downloads/windows/) | RE:AL SHOCK MODのローカルサーバーを動かす |
+| [Python 3.14+](https://www.python.org/downloads/windows/) | RE:AL SHOCK MODのローカルサーバーを動かす |
 | [REFramework Releases](https://github.com/praydog/REFramework/releases) | バイオハザード側の状態を読むMOD基盤。スクリプトから自動導入も可能 |
 
 ## 最短セットアップ
@@ -48,7 +48,7 @@ English version: [README.en.md](README.en.md)
 
 ```powershell
 winget install --id Git.Git -e
-winget install --id Python.Python.3.12 -e
+winget install --id Python.Python.3.14 -e
 ```
 
 次に、好きな場所でこの通りに打ちます。
