@@ -23,6 +23,15 @@ ESP32側はそのコマンドを受け取り、現実世界のプレイヤーに
   <img src="docs/images/concept.png" alt="RE:AL SHOCK MOD concept">
 </p>
 
+## 今回使った主な材料
+
+| URL | 何か |
+|---|---|
+| [COOSPO 心拍センサー / ハートレートモニター](https://amzn.asia/d/03qclP31) | プレイヤーの心拍数とRR intervalを取る胸ベルト型センサー |
+| [RELX EMSベルト](https://amzn.asia/d/0725U7pu) | ESP32から制御する電撃ペナルティ側のベース装置 |
+| [DiyStudio ESP32 開発ボード](https://amzn.asia/d/06wo77h9) | PCからHTTPコマンドを受け取るWi-Fi/Bluetooth開発ボード |
+| [KKHMF 5V 1チャンネルリレーモジュール](https://amzn.asia/d/0ijeHtMs) | ESP32の信号で外部装置のON/OFFを切り替えるリレー |
+
 ## これがやりたい
 
 プレイヤーは普通にバイオを遊ぶ。  
