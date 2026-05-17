@@ -23,6 +23,17 @@ Japanese version: [README.md](README.md)
   <img src="docs/images/concept.png" alt="RE:AL SHOCK MOD concept">
 </p>
 
+## Target Game
+
+| Link | What it is |
+|---|---|
+| [Steam store page](https://store.steampowered.com/app/3764200/Resident_Evil_Requiem/) | Steam version of BIOHAZARD Requiem / Resident Evil Requiem |
+| [CAPCOM official page](https://www.residentevil.com/requiem/) | Official page for BIOHAZARD Requiem / Resident Evil Requiem |
+
+## Setup
+
+For the full copy-paste setup flow, from `git clone` to ESP32 URL configuration, see [this setup guide](docs/SETUP.en.md).
+
 ## Main Parts Used
 
 ### Hardware To Buy
@@ -33,51 +44,6 @@ Japanese version: [README.md](README.md)
 | <img src="https://m.media-amazon.com/images/I/51hKRw0oDXL._AC_SL1000_.jpg" width="80" alt="RELX EMS belt"> | [RELX EMS Belt](https://amzn.asia/d/0725U7pu) | Base device for the electric-shock penalty side |
 | <img src="https://m.media-amazon.com/images/I/71jILh4qbLL._AC_SL1500_.jpg" width="80" alt="DiyStudio ESP32 development board"> | [DiyStudio ESP32 Development Board](https://amzn.asia/d/06wo77h9) | Wi-Fi/Bluetooth board that receives HTTP commands from the PC |
 | <img src="https://m.media-amazon.com/images/I/61nTf-bRj4L._SL1000_.jpg" width="80" alt="KKHMF relay module"> | [KKHMF 5V 1-Channel Relay Module](https://amzn.asia/d/0ijeHtMs) | Relay module used to switch an external device from an ESP32 signal |
-
-### Software To Install
-
-| Link | What it is |
-|---|---|
-| [Git for Windows](https://git-scm.com/download/win) | Required for `git clone` |
-| [Python 3.14+](https://www.python.org/downloads/windows/) | Runs the local RE:AL SHOCK MOD server |
-| [REFramework Releases](https://github.com/praydog/REFramework/releases) | Mod framework used to read the game state. The installer script can also install it |
-
-## Fastest Setup
-
-Open PowerShell and install the basic tools if they are missing.
-
-```powershell
-winget install --id Git.Git -e
-winget install --id Python.Python.3.14 -e
-```
-
-Then run these commands in any folder where you want the project.
-
-```powershell
-git clone https://github.com/Saisei2004/real-shock-mod.git
-cd real-shock-mod
-.\Install-RE-AL-SHOCK-MOD.cmd
-.\Start-RE-AL-SHOCK-MOD.cmd
-```
-
-Open the dashboard:
-
-```text
-http://127.0.0.1:8765/
-```
-
-If REFramework is not installed yet, use this install command instead.
-
-```powershell
-.\scripts\Install-RealShockMod.ps1 -InstallRe9Bridge -InstallREFramework -IUnderstandGameMayBeAffected
-```
-
-To send commands to an ESP32, set the ESP32 URL before launching.
-
-```powershell
-$env:REAL_SHOCK_ESP32_URL = "http://192.168.0.50/command"
-.\Start-RE-AL-SHOCK-MOD.cmd
-```
 
 ## What This Is Trying To Do
 
@@ -119,7 +85,7 @@ What is included in this repository:
 | REFramework Lua Bridge | Exposes HP and damage state from the game |
 | Browser UI | Shows biometric signals, game status, and the active command on one screen |
 | ESP32 sender | Sends command JSON to an ESP32 on the same network |
-| Sample biometric data | Real heart-rate logs used while tuning startle detection |
+| Sample biometric data | My real heart-rate logs used while tuning startle detection |
 
 ## Command Priority
 
@@ -242,95 +208,6 @@ The ESP32 can switch shock patterns based on the `command` value.
 | `damage` | Damage penalty |
 | `death` | Game-over penalty |
 
-## Extra Setup Notes
-
-The [Fastest Setup](#fastest-setup) section is the recommended path. These are the individual commands if you want to do each step manually.
-
-### Get The Repository
-
-With Git:
-
-```powershell
-git clone https://github.com/Saisei2004/real-shock-mod.git
-cd real-shock-mod
-```
-
-Without Git:
-
-[Download ZIP](https://github.com/Saisei2004/real-shock-mod/archive/refs/heads/main.zip)
-
-### Install
-
-```powershell
-.\Install-RE-AL-SHOCK-MOD.cmd
-```
-
-This installs Python dependencies, installs the Lua bridge, and creates a desktop shortcut.
-
-### Install REFramework Too
-
-```powershell
-.\scripts\Install-RealShockMod.ps1 -InstallRe9Bridge -InstallREFramework -IUnderstandGameMayBeAffected
-```
-
-### Install Only The Lua Bridge
-
-```powershell
-.\scripts\Install-Re9Bridge.ps1 -InstallLua
-```
-
-### Check Bridge Status
-
-```powershell
-.\scripts\Install-Re9Bridge.ps1
-```
-
-## Launch
-
-Use the desktop shortcut, or run:
-
-```text
-Start-RE-AL-SHOCK-MOD.cmd
-```
-
-Or:
-
-```powershell
-.\scripts\Start-RealShockMod.ps1
-```
-
-Open:
-
-```text
-http://127.0.0.1:8765/
-```
-
-Demo UI URLs for README-style screenshots:
-
-```text
-http://127.0.0.1:8765/?demo=damage
-```
-
-Available demo values: `normal`, `startle`, `damage`, `faltering`, `death`.
-
-## Configuration
-
-```powershell
-$env:REAL_SHOCK_PORT = "8765"
-$env:REAL_SHOCK_H6_ADDRESS = ""
-$env:REAL_SHOCK_H6_NAME_PREFIX = "H6"
-$env:REAL_SHOCK_ESP32_URL = "http://192.168.0.50/command"
-$env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
-```
-
-| Variable | Meaning |
-|---|---|
-| `REAL_SHOCK_PORT` | Local server port |
-| `REAL_SHOCK_H6_ADDRESS` | BLE address. Leave empty for auto-detect |
-| `REAL_SHOCK_H6_NAME_PREFIX` | Heart-rate sensor name prefix |
-| `REAL_SHOCK_ESP32_URL` | HTTP URL used to send commands to ESP32 |
-| `REAL_SHOCK_ESP32_TIMEOUT` | ESP32 send timeout in seconds |
-
 ## API
 
 | Method | Path | Purpose |
@@ -348,7 +225,7 @@ $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
 
 ## Extra: Real Biometric Data
 
-Real COOSPO H6 biometric logs are included.
+My real COOSPO H6 biometric logs are included.
 
 ```text
 docs/sample-data/biometric/
@@ -379,11 +256,6 @@ docs/sample-data/biometric/   Real biometric CSV data
 Install-RE-AL-SHOCK-MOD.cmd   Double-click installer
 Start-RE-AL-SHOCK-MOD.cmd     Double-click launcher
 ```
-
-## Images
-
-The UI screenshots in this README are captured from the actual `static/index.html`, `static/app.js`, and `static/styles.css` using the `?demo=` pseudo-data mode.  
-Gameplay screenshots were provided by the author. The concept image and logo are visuals used to communicate the feel of the project.
 
 ## Notice
 
