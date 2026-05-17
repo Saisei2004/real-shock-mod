@@ -17,7 +17,7 @@
 ESP32側はそのコマンドを受け取り、現実世界のプレイヤーに電撃ペナルティを与える。  
 つまり、ゲームで痛い目を見ると、ちゃんと現実でも痛い目を見るための装置です。
 
-日本語版READMEがメインです。英語版はこちら: [README.en.md](README.en.md)
+English version: [README.en.md](README.en.md)
 
 <p align="center">
   <img src="docs/images/concept.png" alt="RE:AL SHOCK MOD concept">
