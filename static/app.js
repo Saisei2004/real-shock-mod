@@ -335,6 +335,119 @@ function connect() {
   });
 }
 
+function makeHistory(seedBpm, seedRr, stress = 0) {
+  const now = Date.now() / 1000;
+  const hr = [];
+  const rr = [];
+  for (let index = 0; index < 60; index += 1) {
+    const phase = index / 5;
+    const eventShape = Math.max(0, 1 - Math.abs(index - 43) / 8) * stress;
+    hr.push({
+      t: now - (60 - index),
+      v: seedBpm + Math.sin(phase) * 2.8 + eventShape * 16,
+    });
+    rr.push({
+      t: now - (60 - index),
+      v: seedRr + Math.cos(phase * 0.9) * 18 - eventShape * 95,
+    });
+  }
+  return { hr, rr };
+}
+
+function demoSnapshot(kind) {
+  const commandMap = {
+    normal: { kind: "none", label: "なし", priority: 0, source: "idle", hp: 92, bpm: 72, rr: 832, startle: 8, fear: 18, movement: 6, tone: "calm" },
+    startle: { kind: "startle", label: "びっくり", priority: 2, source: "h6-detector", hp: 88, bpm: 101, rr: 604, startle: 86, fear: 48, movement: 22, tone: "hot" },
+    damage: { kind: "damage", label: "ダメージ", priority: 3, source: "re9-bridge", hp: 42, bpm: 96, rr: 632, startle: 64, fear: 58, movement: 18, tone: "hot" },
+    faltering: { kind: "faltering", label: "ふらつき", priority: 1, source: "re9-bridge", hp: 14.8, bpm: 88, rr: 686, startle: 26, fear: 71, movement: 12, tone: "warn" },
+    death: { kind: "death", label: "死亡", priority: 4, source: "re9-bridge", hp: 0, bpm: 104, rr: 578, startle: 78, fear: 83, movement: 24, tone: "hot" },
+  };
+  const demo = commandMap[kind] || commandMap.normal;
+  const history = makeHistory(demo.bpm, demo.rr, Math.max(demo.startle, demo.fear) / 100);
+  const active = {
+    kind: demo.kind,
+    label: demo.label,
+    source: demo.source,
+    priority: demo.priority,
+    payload: {
+      hp: demo.hp,
+      max_hp: 100,
+      hp_percent: demo.hp,
+      damage_count: demo.kind === "damage" ? 7 : 6,
+    },
+  };
+
+  return {
+    status: "connected",
+    message: "READMEデモ表示 / 疑似データ",
+    state: {
+      label: demo.kind === "none" ? "安定" : demo.label,
+      tone: demo.tone,
+      detail: demo.kind === "none" ? "RR interval は落ち着いています。" : "コマンド優先度エンジンが反応しています。",
+    },
+    device: {
+      name: "COOSPO H6 Heart Rate Monitor",
+      address: "DEMO:H6:README",
+      info: { model: "H6", firmware: "demo" },
+    },
+    measurement: {
+      bpm: demo.bpm,
+      rr_ms: [demo.rr, demo.rr + 18, demo.rr - 11],
+      battery_percent: 91,
+      last_seen: "demo",
+      contact_detected: true,
+      last_raw_hex: "10 5f 6c 02",
+    },
+    hrv: {
+      rmssd_ms: demo.kind === "none" ? 56 : 28,
+      sdnn_ms: demo.kind === "none" ? 61 : 35,
+      pnn50_percent: demo.kind === "none" ? 34 : 9,
+      rr_count: 420,
+    },
+    detection: {
+      primary: demo.kind === "none" ? "平常" : demo.label,
+      tone: demo.tone,
+      confidence: Math.max(demo.startle, demo.fear),
+      startle_score: demo.startle,
+      fear_tension_score: demo.fear,
+      movement_score: demo.movement,
+      reasons: demo.kind === "none"
+        ? ["baseline stable", "RR variance normal"]
+        : ["RR interval short drop", "BPM delayed rise", "3秒追跡で確定"],
+    },
+    recording: { active: false, saved: null },
+    game: {
+      game: { running: true },
+      bridge: { present: true, fresh: true, age_seconds: 0.2 },
+      player: {
+        found: true,
+        hp: demo.hp,
+        max_hp: 100,
+        hp_percent: demo.hp,
+        faltering_low_hp: demo.hp > 0 && demo.hp <= 16.75,
+      },
+    },
+    commands: {
+      active,
+      recent: demo.kind === "none" ? [] : [active, { ...active, kind: "none", label: "なし", source: "idle" }],
+    },
+    esp32: {
+      enabled: true,
+      status: "sent",
+      last_sent: {
+        kind: demo.kind,
+        label: demo.label,
+      },
+    },
+    history,
+  };
+}
+
+function runDemoMode(kind) {
+  update(demoSnapshot(kind));
+  setInterval(() => update(demoSnapshot(kind)), 1600);
+}
+
 fields.startRecording.addEventListener("click", () => {
   startRecording().catch((error) => {
     fields.recordingSaved.textContent = `開始できませんでした: ${error}`;
@@ -377,4 +490,9 @@ fields.debugNone.addEventListener("click", () => {
   });
 });
 
-connect();
+const demoKind = new URLSearchParams(window.location.search).get("demo");
+if (demoKind) {
+  runDemoMode(demoKind);
+} else {
+  connect();
+}
