@@ -131,11 +131,7 @@ The biometric side watches real-time heart-rate behavior:
 - sustained tension windows
 - posture/movement-like false positives
 
-The current dashboard shows both the live signal and the detector score stack. The graph below is generated from the included real playtest data.
-
-![Biometric waveform samples](docs/images/biometric-waveforms.svg)
-
-Red markers are strong startle/tension candidates. Amber markers are moderate candidates. This makes it easier to compare:
+The current dashboard shows both the live signal and the detector score stack. The included CSV files make it easier to compare:
 
 - relaxed baseline
 - Resident Evil play
