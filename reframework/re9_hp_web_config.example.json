@@ -1,0 +1,25 @@
+{
+  "enabled": true,
+  "write_interval": 0.1,
+  "hp_reader": {
+    "enabled": true,
+    "note": "RE9 app.CharacterManager -> PlayerContextFast -> HitPoint の軽量読み取り。",
+    "low_hp_percent": 30,
+    "roots": [
+      "app.CharacterManager"
+    ],
+    "object_methods": [
+      "get_PlayerContextFast",
+      "getPlayerContextRefFast"
+    ],
+    "nested_methods": [
+      "get_HitPoint"
+    ],
+    "hp_members": [
+      "get_CurrentHitPoint"
+    ],
+    "max_hp_members": [
+      "get_CurrentMaximumHitPoint"
+    ]
+  }
+}

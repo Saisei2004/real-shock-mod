@@ -1,0 +1,380 @@
+const $ = (id) => document.getElementById(id);
+
+const fields = {
+  deviceName: $("deviceName"),
+  connDot: $("connDot"),
+  connText: $("connText"),
+  bpm: $("bpm"),
+  state: $("state"),
+  stateDetail: $("stateDetail"),
+  rmssd: $("rmssd"),
+  sdnn: $("sdnn"),
+  pnn50: $("pnn50"),
+  battery: $("battery"),
+  lastSeen: $("lastSeen"),
+  rrLatest: $("rrLatest"),
+  contact: $("contact"),
+  model: $("model"),
+  firmware: $("firmware"),
+  address: $("address"),
+  samples: $("samples"),
+  raw: $("raw"),
+  recordingName: $("recordingName"),
+  startRecording: $("startRecording"),
+  stopRecording: $("stopRecording"),
+  recordingStatus: $("recordingStatus"),
+  recordingProgress: $("recordingProgress"),
+  recordingSaved: $("recordingSaved"),
+  detectPrimary: $("detectPrimary"),
+  detectReasons: $("detectReasons"),
+  startleScore: $("startleScore"),
+  fearScore: $("fearScore"),
+  movementScore: $("movementScore"),
+  startleBar: $("startleBar"),
+  fearBar: $("fearBar"),
+  movementBar: $("movementBar"),
+  mainBioBpm: $("mainBioBpm"),
+  mainBioSub: $("mainBioSub"),
+  mainGameHp: $("mainGameHp"),
+  mainGameSub: $("mainGameSub"),
+  activeCommand: $("activeCommand"),
+  activeCommandDetail: $("activeCommandDetail"),
+  hpFill: $("hpFill"),
+  gameStatus: $("gameStatus"),
+  gameHp: $("gameHp"),
+  gameBridge: $("gameBridge"),
+  commandLog: $("commandLog"),
+  esp32Status: $("esp32Status"),
+  debugDamage: $("debugDamage"),
+  debugDeath: $("debugDeath"),
+  debugStartle: $("debugStartle"),
+  debugFaltering: $("debugFaltering"),
+  debugNone: $("debugNone"),
+};
+
+const hrCanvas = $("hrChart");
+const rrCanvas = $("rrChart");
+
+function fmt(value, suffix = "", digits = 1) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return `--${suffix}`;
+  return `${Number(value).toFixed(digits)}${suffix}`;
+}
+
+function setStatus(status, message) {
+  fields.connDot.className = `dot ${status || "neutral"}`;
+  fields.connText.textContent = message || status || "待機中";
+}
+
+function setState(state) {
+  const tone = state?.tone || "neutral";
+  fields.state.className = `state ${tone}`;
+  fields.state.textContent = state?.label || "計測中";
+  fields.stateDetail.textContent = state?.detail || "RR interval を集めています。";
+}
+
+function drawChart(canvas, points, options) {
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
+  ctx.clearRect(0, 0, width, height);
+
+  ctx.fillStyle = "#050807";
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.strokeStyle = "rgba(134, 240, 168, 0.16)";
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 5; i += 1) {
+    const y = (height / 5) * i;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+  }
+  for (let i = 1; i < 7; i += 1) {
+    const x = (width / 7) * i;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
+    ctx.stroke();
+  }
+
+  if (!points || points.length < 2) {
+    ctx.fillStyle = "#53605a";
+    ctx.font = "14px Segoe UI, sans-serif";
+    ctx.fillText("NO SIGNAL", 18, 32);
+    return;
+  }
+
+  const values = points.map((p) => p.v);
+  const minValue = options.min ?? Math.min(...values);
+  const maxValue = options.max ?? Math.max(...values);
+  const pad = Math.max(1, (maxValue - minValue) * 0.12);
+  const yMin = minValue - pad;
+  const yMax = maxValue + pad;
+  const tMin = points[0].t;
+  const tMax = points[points.length - 1].t;
+  const tSpan = Math.max(1, tMax - tMin);
+
+  ctx.strokeStyle = options.color;
+  ctx.lineWidth = 2.5;
+  ctx.shadowColor = options.color;
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    const x = ((point.t - tMin) / tSpan) * (width - 44) + 22;
+    const y = height - 24 - ((point.v - yMin) / (yMax - yMin)) * (height - 48);
+    if (index === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = "#85918b";
+  ctx.font = "12px Segoe UI, sans-serif";
+  ctx.fillText(`${Math.round(yMax)}${options.unit}`, 14, 20);
+  ctx.fillText(`${Math.round(yMin)}${options.unit}`, 14, height - 9);
+}
+
+function update(data) {
+  const device = data.device || {};
+  const info = device.info || {};
+  const measurement = data.measurement || {};
+  const hrv = data.hrv || {};
+
+  setStatus(data.status, data.message);
+  setState(data.state);
+
+  fields.deviceName.textContent = device.name || "H6M を待機中";
+  fields.bpm.textContent = measurement.bpm ?? "--";
+  fields.rmssd.textContent = fmt(hrv.rmssd_ms, " ms");
+  fields.sdnn.textContent = fmt(hrv.sdnn_ms, " ms");
+  fields.pnn50.textContent = fmt(hrv.pnn50_percent, " %");
+  fields.battery.textContent = measurement.battery_percent === null || measurement.battery_percent === undefined
+    ? "-- %"
+    : `${measurement.battery_percent} %`;
+  fields.lastSeen.textContent = measurement.last_seen || "--";
+  fields.rrLatest.textContent = measurement.rr_ms?.length
+    ? `${measurement.rr_ms.map((v) => Number(v).toFixed(1)).join(" / ")} ms`
+    : "-- ms";
+  fields.contact.textContent = measurement.contact_detected === null || measurement.contact_detected === undefined
+    ? "--"
+    : measurement.contact_detected ? "Detected" : "Weak";
+  fields.model.textContent = info.model || "--";
+  fields.firmware.textContent = info.firmware || "--";
+  fields.address.textContent = device.address || device.target_address || "--";
+  fields.samples.textContent = `${hrv.rr_count || 0} RR`;
+  fields.raw.textContent = measurement.last_raw_hex || "--";
+  updateMainBio(measurement, hrv);
+  updateDetection(data.detection);
+  updateRecording(data.recording);
+  updateGame(data.game, data.commands, data.esp32);
+
+  drawChart(hrCanvas, data.history?.hr || [], { color: "#86f0a8", unit: " bpm" });
+  drawChart(rrCanvas, data.history?.rr || [], { color: "#7aa9d6", unit: " ms" });
+}
+
+function updateMainBio(measurement, hrv) {
+  fields.mainBioBpm.textContent = measurement.bpm === null || measurement.bpm === undefined
+    ? "-- bpm"
+    : `${measurement.bpm} bpm`;
+  const rr = measurement.rr_ms?.length ? `${Number(measurement.rr_ms[0]).toFixed(0)}ms` : "--";
+  fields.mainBioSub.textContent = `RMSSD ${fmt(hrv.rmssd_ms, "ms", 0)} / RR ${rr}`;
+}
+
+function scoreText(value) {
+  const score = Math.max(0, Math.min(100, Number(value || 0)));
+  return `${Math.round(score)}%`;
+}
+
+function updateDetection(detection) {
+  const tone = detection?.tone || "neutral";
+  fields.detectPrimary.className = tone;
+  const confidence = detection?.confidence ?? 0;
+  fields.detectPrimary.textContent = detection?.primary
+    ? `${detection.primary} ${scoreText(confidence)}`
+    : "計測中";
+  fields.detectReasons.textContent = detection?.reasons?.length
+    ? detection.reasons.join(" / ")
+    : "RR interval を集めています。";
+
+  const startle = detection?.startle_score || 0;
+  const fear = detection?.fear_tension_score || 0;
+  const movement = detection?.movement_score || 0;
+  fields.startleScore.textContent = scoreText(startle);
+  fields.fearScore.textContent = scoreText(fear);
+  fields.movementScore.textContent = scoreText(movement);
+  fields.startleBar.style.width = `${Math.max(0, Math.min(100, startle))}%`;
+  fields.fearBar.style.width = `${Math.max(0, Math.min(100, fear))}%`;
+  fields.movementBar.style.width = `${Math.max(0, Math.min(100, movement))}%`;
+}
+
+function updateRecording(recording) {
+  const active = Boolean(recording?.active);
+  fields.recordingName.disabled = active;
+  fields.startRecording.disabled = active;
+  fields.stopRecording.disabled = !active;
+
+  if (active) {
+    const elapsed = Number(recording.elapsed_seconds || 0);
+    fields.recordingProgress.style.width = "100%";
+    fields.recordingStatus.textContent = `${recording.name} を録画中 / ${Math.floor(elapsed)} 秒 / ${recording.samples || 0} samples`;
+    fields.recordingSaved.textContent = "";
+    return;
+  }
+
+  fields.recordingProgress.style.width = "0%";
+  fields.recordingStatus.textContent = "未録画";
+  if (recording?.saved) {
+    fields.recordingSaved.textContent = `保存済み: ${recording.saved.csv} / ${recording.saved.sample_count} samples`;
+  }
+}
+
+function updateGame(game, commands, esp32) {
+  const status = game || {};
+  const gameInfo = status.game || {};
+  const bridge = status.bridge || {};
+  const player = status.player || {};
+  const active = commands?.active || { kind: "none", label: "なし", source: "--", payload: {} };
+  const running = Boolean(gameInfo.running);
+  const fresh = Boolean(bridge.fresh);
+
+  if (running && fresh && player.found) {
+    fields.gameStatus.textContent = "RE9接続中 / プレイヤーHP取得中";
+  } else if (running && fresh) {
+    fields.gameStatus.textContent = "RE9接続中 / プレイヤー探索中";
+  } else if (running) {
+    fields.gameStatus.textContent = "RE9起動中 / ブリッジ更新待ち";
+  } else {
+    fields.gameStatus.textContent = "RE9未起動";
+  }
+
+  const hp = player.hp;
+  const maxHp = player.max_hp;
+  const hpPercent = player.hp_percent;
+  fields.gameHp.textContent = hp === null || hp === undefined
+    ? "--"
+    : `${fmt(hp, "", 0)} / ${fmt(maxHp, "", 0)} (${fmt(hpPercent, "%", 0)})`;
+  fields.mainGameHp.textContent = hp === null || hp === undefined
+    ? "HP --"
+    : `HP ${fmt(hpPercent, "%", 0)}`;
+  fields.hpFill.style.width = hpPercent === null || hpPercent === undefined
+    ? "0%"
+    : `${Math.max(0, Math.min(100, Number(hpPercent)))}%`;
+  const faltering = player.faltering_low_hp ? "ふらつき" : "通常";
+  fields.mainGameSub.textContent = `${fields.gameStatus.textContent} / ${faltering}`;
+  fields.gameBridge.textContent = bridge.fresh
+    ? `fresh ${fmt(bridge.age_seconds, "s", 1)}`
+    : bridge.present ? `stale ${fmt(bridge.age_seconds, "s", 1)}` : "not found";
+
+  const recent = commands?.recent || [];
+  fields.activeCommand.className = active.kind || "none";
+  fields.activeCommand.textContent = active.label || active.kind || "none";
+  fields.activeCommandDetail.textContent = `${active.kind || "none"} / ${active.source || "--"}`;
+  document.body.classList.remove("command-none", "command-faltering", "command-startle", "command-damage", "command-death");
+  document.body.classList.add(`command-${active.kind || "none"}`);
+  fields.commandLog.textContent = recent.length
+    ? recent.slice(0, 3).map((event) => `${event.label || event.kind}@${event.source}`).join(" / ")
+    : "--";
+  if (esp32?.enabled) {
+    const last = esp32.last_sent?.kind ? ` / ${esp32.last_sent.kind}` : "";
+    fields.esp32Status.textContent = `${esp32.status || "waiting"}${last}`;
+  } else {
+    fields.esp32Status.textContent = "disabled";
+  }
+}
+
+async function startRecording() {
+  const name = fields.recordingName.value.trim() || new Date().toISOString().slice(0, 19).replace(/[T:]/g, "-");
+  fields.recordingName.value = name;
+  const response = await fetch("/api/recording/start", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) {
+    fields.recordingSaved.textContent = `開始できませんでした: ${await response.text()}`;
+  }
+}
+
+async function stopRecording() {
+  const response = await fetch("/api/recording/stop", { method: "POST" });
+  if (!response.ok) {
+    fields.recordingSaved.textContent = `停止できませんでした: ${await response.text()}`;
+  }
+}
+
+async function sendDebugCommand(kind) {
+  const response = await fetch(`/api/debug/command/${kind}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ note: "manual debug button" }),
+  });
+  if (!response.ok) {
+    fields.commandLog.textContent = `debug failed: ${await response.text()}`;
+  }
+}
+
+function connect() {
+  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+  const ws = new WebSocket(`${protocol}://${window.location.host}/ws`);
+
+  ws.addEventListener("open", () => setStatus("connected", "ブラウザ接続済み"));
+  ws.addEventListener("message", (event) => {
+    try {
+      update(JSON.parse(event.data));
+    } catch (error) {
+      console.error(error);
+    }
+  });
+  ws.addEventListener("close", () => {
+    setStatus("waiting", "再接続中");
+    setTimeout(connect, 1500);
+  });
+  ws.addEventListener("error", () => {
+    ws.close();
+  });
+}
+
+fields.startRecording.addEventListener("click", () => {
+  startRecording().catch((error) => {
+    fields.recordingSaved.textContent = `開始できませんでした: ${error}`;
+  });
+});
+
+fields.stopRecording.addEventListener("click", () => {
+  stopRecording().catch((error) => {
+    fields.recordingSaved.textContent = `停止できませんでした: ${error}`;
+  });
+});
+
+fields.debugDamage.addEventListener("click", () => {
+  sendDebugCommand("damage").catch((error) => {
+    fields.commandLog.textContent = `debug failed: ${error}`;
+  });
+});
+
+fields.debugDeath.addEventListener("click", () => {
+  sendDebugCommand("death").catch((error) => {
+    fields.commandLog.textContent = `debug failed: ${error}`;
+  });
+});
+
+fields.debugStartle.addEventListener("click", () => {
+  sendDebugCommand("startle").catch((error) => {
+    fields.commandLog.textContent = `debug failed: ${error}`;
+  });
+});
+
+fields.debugFaltering.addEventListener("click", () => {
+  sendDebugCommand("faltering").catch((error) => {
+    fields.commandLog.textContent = `debug failed: ${error}`;
+  });
+});
+
+fields.debugNone.addEventListener("click", () => {
+  sendDebugCommand("none").catch((error) => {
+    fields.commandLog.textContent = `debug failed: ${error}`;
+  });
+});
+
+connect();

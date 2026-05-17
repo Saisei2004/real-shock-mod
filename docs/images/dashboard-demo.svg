@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+<rect width="100%" height="100%" fill="#050807"/>
+<defs><filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<line x1="0" y1="0" x2="0" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="32" y1="0" x2="32" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="64" y1="0" x2="64" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="96" y1="0" x2="96" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="128" y1="0" x2="128" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="160" y1="0" x2="160" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="192" y1="0" x2="192" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="224" y1="0" x2="224" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="256" y1="0" x2="256" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="288" y1="0" x2="288" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="320" y1="0" x2="320" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="352" y1="0" x2="352" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="384" y1="0" x2="384" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="416" y1="0" x2="416" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="448" y1="0" x2="448" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="480" y1="0" x2="480" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="512" y1="0" x2="512" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="544" y1="0" x2="544" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="576" y1="0" x2="576" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="608" y1="0" x2="608" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="640" y1="0" x2="640" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="672" y1="0" x2="672" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="704" y1="0" x2="704" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="736" y1="0" x2="736" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="768" y1="0" x2="768" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="800" y1="0" x2="800" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="832" y1="0" x2="832" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="864" y1="0" x2="864" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="896" y1="0" x2="896" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="928" y1="0" x2="928" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="960" y1="0" x2="960" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="992" y1="0" x2="992" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="1024" y1="0" x2="1024" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="1056" y1="0" x2="1056" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="1088" y1="0" x2="1088" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="1120" y1="0" x2="1120" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="1152" y1="0" x2="1152" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="1184" y1="0" x2="1184" y2="760" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="0" x2="1200" y2="0" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="32" x2="1200" y2="32" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="64" x2="1200" y2="64" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="96" x2="1200" y2="96" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="128" x2="1200" y2="128" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="160" x2="1200" y2="160" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="192" x2="1200" y2="192" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="224" x2="1200" y2="224" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="256" x2="1200" y2="256" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="288" x2="1200" y2="288" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="320" x2="1200" y2="320" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="352" x2="1200" y2="352" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="384" x2="1200" y2="384" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="416" x2="1200" y2="416" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="448" x2="1200" y2="448" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="480" x2="1200" y2="480" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="512" x2="1200" y2="512" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="544" x2="1200" y2="544" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="576" x2="1200" y2="576" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="608" x2="1200" y2="608" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="640" x2="1200" y2="640" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="672" x2="1200" y2="672" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="704" x2="1200" y2="704" stroke="#13201b" stroke-width="1"/>
+<line x1="0" y1="736" x2="1200" y2="736" stroke="#13201b" stroke-width="1"/>
+<text x="32" y="48" fill="#e8efe8" font-family="Segoe UI, sans-serif" font-size="30" font-weight="900">RE:AL SHOCK MOD</text>
+<text x="32" y="76" fill="#85918b" font-family="Segoe UI, sans-serif" font-size="15">H6M 03485 / RE Requiem playtest / ESP32 linked</text>
+<rect x="30" y="100" width="1140" height="126" fill="#07100c" stroke="#86f0a8" stroke-width="1.5"/>
+<text x="58" y="134" fill="#85918b" font-family="Segoe UI, sans-serif" font-size="16" font-weight="800">ACTIVE COMMAND</text>
+<text x="58" y="190" fill="#e3b45a" filter="url(#glow)" font-family="Segoe UI, sans-serif" font-size="62" font-weight="900">ダメージ</text>
+<text x="60" y="215" fill="#85918b" font-family="Segoe UI, sans-serif" font-size="15">damage / re9-bridge -> ESP32 sent</text>
+<rect x="650" y="135" width="78" height="58" fill="#050807" stroke="#53605a"/>
+<text x="689" y="169" text-anchor="middle" fill="#53605a" font-family="Segoe UI, sans-serif" font-size="14" font-weight="900">DEATH</text>
+<rect x="746" y="135" width="78" height="58" fill="#050807" stroke="#e3b45a"/>
+<text x="785" y="169" text-anchor="middle" fill="#e3b45a" font-family="Segoe UI, sans-serif" font-size="14" font-weight="900">DMG</text>
+<rect x="842" y="135" width="78" height="58" fill="#050807" stroke="#53605a"/>
+<text x="881" y="169" text-anchor="middle" fill="#53605a" font-family="Segoe UI, sans-serif" font-size="14" font-weight="900">JOLT</text>
+<rect x="938" y="135" width="78" height="58" fill="#050807" stroke="#53605a"/>
+<text x="977" y="169" text-anchor="middle" fill="#53605a" font-family="Segoe UI, sans-serif" font-size="14" font-weight="900">FALTER</text>
+<rect x="1034" y="135" width="78" height="58" fill="#050807" stroke="#53605a"/>
+<text x="1073" y="169" text-anchor="middle" fill="#53605a" font-family="Segoe UI, sans-serif" font-size="14" font-weight="900">NONE</text>
+<rect x="30" y="246" width="360" height="230" fill="#0d1311" stroke="#2d4037"/>
+<text x="48" y="274" fill="#e8efe8" font-family="Segoe UI, sans-serif" font-size="16" font-weight="900">BIO SIGNAL</text>
+<rect x="420" y="246" width="360" height="230" fill="#0d1311" stroke="#2d4037"/>
+<text x="438" y="274" fill="#e8efe8" font-family="Segoe UI, sans-serif" font-size="16" font-weight="900">BIOHAZARD</text>
+<rect x="810" y="246" width="360" height="230" fill="#0d1311" stroke="#2d4037"/>
+<text x="828" y="274" fill="#e8efe8" font-family="Segoe UI, sans-serif" font-size="16" font-weight="900">DETECTION</text>
+<rect x="30" y="500" width="555" height="220" fill="#0d1311" stroke="#2d4037"/>
+<text x="48" y="528" fill="#e8efe8" font-family="Segoe UI, sans-serif" font-size="16" font-weight="900">HEART RATE</text>
+<rect x="615" y="500" width="555" height="220" fill="#0d1311" stroke="#2d4037"/>
+<text x="633" y="528" fill="#e8efe8" font-family="Segoe UI, sans-serif" font-size="16" font-weight="900">RR INTERVAL</text>
+<text x="52" y="350" fill="#86f0a8" filter="url(#glow)" font-family="Segoe UI, sans-serif" font-size="82" font-weight="900">96</text>
+<text x="176" y="350" fill="#85918b" font-family="Segoe UI, sans-serif" font-size="22">bpm</text>
+<text x="52" y="398" fill="#ef5148" font-family="Segoe UI, sans-serif" font-size="20" font-weight="800">びっくり候補 86%</text>
+<text x="52" y="430" fill="#85918b" font-family="Segoe UI, sans-serif" font-size="14">RMSSD 23ms / RR 685ms</text>
+<text x="442" y="330" fill="#86f0a8" filter="url(#glow)" font-family="Segoe UI, sans-serif" font-size="56" font-weight="900">HP 42%</text>
+<rect x="442" y="352" width="300" height="18" fill="#050807" stroke="#2d4037"/>
+<rect x="442" y="352" width="126" height="18" fill="#e3b45a"/>
+<text x="442" y="410" fill="#85918b" font-family="Segoe UI, sans-serif" font-size="15">RE9 connected / bridge fresh 0.2s</text>
+<text x="442" y="438" fill="#85918b" font-family="Segoe UI, sans-serif" font-size="15">ESP32: sent / damage</text>
+<text x="832" y="320" fill="#85918b" font-family="Segoe UI, sans-serif" font-size="14">Startle</text>
+<rect x="928" y="308" width="200" height="12" fill="#050807" stroke="#2d4037"/>
+<rect x="928" y="308" width="172" height="12" fill="#ef5148"/>
+<text x="1140" y="320" fill="#e8efe8" font-family="Segoe UI, sans-serif" font-size="14" text-anchor="end">86%</text>
+<text x="832" y="368" fill="#85918b" font-family="Segoe UI, sans-serif" font-size="14">Tension</text>
+<rect x="928" y="356" width="200" height="12" fill="#050807" stroke="#2d4037"/>
+<rect x="928" y="356" width="128" height="12" fill="#e3b45a"/>
+<text x="1140" y="368" fill="#e8efe8" font-family="Segoe UI, sans-serif" font-size="14" text-anchor="end">64%</text>
+<text x="832" y="416" fill="#85918b" font-family="Segoe UI, sans-serif" font-size="14">Movement</text>
+<rect x="928" y="404" width="200" height="12" fill="#050807" stroke="#2d4037"/>
+<rect x="928" y="404" width="56" height="12" fill="#7aa9d6"/>
+<text x="1140" y="416" fill="#e8efe8" font-family="Segoe UI, sans-serif" font-size="14" text-anchor="end">28%</text>
+<line x1="99.4" y1="546" x2="99.4" y2="700" stroke="#1d2a25"/>
+<line x1="168.8" y1="546" x2="168.8" y2="700" stroke="#1d2a25"/>
+<line x1="238.1" y1="546" x2="238.1" y2="700" stroke="#1d2a25"/>
+<line x1="307.5" y1="546" x2="307.5" y2="700" stroke="#1d2a25"/>
+<line x1="376.9" y1="546" x2="376.9" y2="700" stroke="#1d2a25"/>
+<line x1="446.2" y1="546" x2="446.2" y2="700" stroke="#1d2a25"/>
+<line x1="515.6" y1="546" x2="515.6" y2="700" stroke="#1d2a25"/>
+<line x1="46" y1="575.6" x2="569" y2="575.6" stroke="#1d2a25"/>
+<line x1="46" y1="605.2" x2="569" y2="605.2" stroke="#1d2a25"/>
+<line x1="46" y1="634.8" x2="569" y2="634.8" stroke="#1d2a25"/>
+<line x1="46" y1="664.4" x2="569" y2="664.4" stroke="#1d2a25"/>
+<polyline points="52.0,626.0 57.2,629.3 62.3,632.5 67.5,635.6 72.6,638.4 77.8,640.8 83.0,642.8 88.1,644.4 93.3,645.4 98.5,645.9 103.6,645.9 108.8,645.3 113.9,644.2 119.1,642.6 124.3,640.5 129.4,638.0 134.6,635.1 139.7,632.1 144.9,628.8 150.1,625.5 155.2,622.2 160.4,619.0 165.6,616.0 170.7,613.2 175.9,610.9 181.0,608.9 186.2,607.4 191.4,606.4 196.5,606.0 201.7,606.1 206.8,606.8 212.0,608.0 217.2,609.7 222.3,611.9 227.5,614.4 232.7,617.3 237.8,620.4 243.0,623.7 248.1,627.0 253.3,630.3 258.5,633.5 263.6,636.5 268.8,639.1 273.9,641.5 279.1,643.3 284.3,644.8 289.4,645.7 294.6,646.0 299.8,645.8 304.9,645.0 310.1,643.7 315.2,642.0 320.4,639.8 325.6,637.2 330.7,634.2 335.9,589.1 341.1,585.8 346.2,582.5 351.4,579.2 356.5,576.1 361.7,573.1 366.9,570.5 372.0,568.2 377.2,566.4 382.3,565.1 387.5,564.3 392.7,564.0 397.8,564.3 403.0,607.1 408.2,608.5 413.3,610.3 418.5,612.6 423.6,615.3 428.8,618.2 434.0,621.4 439.1,624.7 444.3,628.0 449.4,631.3 454.6,634.4 459.8,637.3 464.9,639.9 470.1,642.1 475.3,643.8 480.4,645.1 485.6,645.8 490.7,646.0 495.9,645.6 501.1,644.7 506.2,643.3 511.4,641.3 516.5,639.0 521.7,636.3 526.9,633.3 532.0,630.1 537.2,626.8 542.4,623.5 547.5,620.2 552.7,617.1 557.8,614.3 563.0,611.8" fill="none" stroke="#86f0a8" stroke-width="3" filter="url(#glow)"/>
+<line x1="684.4" y1="546" x2="684.4" y2="700" stroke="#1d2a25"/>
+<line x1="753.8" y1="546" x2="753.8" y2="700" stroke="#1d2a25"/>
+<line x1="823.1" y1="546" x2="823.1" y2="700" stroke="#1d2a25"/>
+<line x1="892.5" y1="546" x2="892.5" y2="700" stroke="#1d2a25"/>
+<line x1="961.9" y1="546" x2="961.9" y2="700" stroke="#1d2a25"/>
+<line x1="1031.2" y1="546" x2="1031.2" y2="700" stroke="#1d2a25"/>
+<line x1="1100.6" y1="546" x2="1100.6" y2="700" stroke="#1d2a25"/>
+<line x1="631" y1="575.6" x2="1154" y2="575.6" stroke="#1d2a25"/>
+<line x1="631" y1="605.2" x2="1154" y2="605.2" stroke="#1d2a25"/>
+<line x1="631" y1="634.8" x2="1154" y2="634.8" stroke="#1d2a25"/>
+<line x1="631" y1="664.4" x2="1154" y2="664.4" stroke="#1d2a25"/>
+<polyline points="637.0,644.0 642.2,647.3 647.3,650.5 652.5,653.6 657.6,656.4 662.8,658.8 668.0,660.8 673.1,662.4 678.3,663.4 683.5,663.9 688.6,663.9 693.8,663.3 698.9,662.2 704.1,660.6 709.3,658.5 714.4,656.0 719.6,653.1 724.7,650.1 729.9,646.8 735.1,643.5 740.2,640.2 745.4,637.0 750.6,634.0 755.7,631.2 760.9,628.9 766.0,626.9 771.2,625.4 776.4,624.4 781.5,624.0 786.7,624.1 791.8,624.8 797.0,626.0 802.2,627.7 807.3,629.9 812.5,632.4 817.7,635.3 822.8,638.4 828.0,641.7 833.1,645.0 838.3,648.3 843.5,651.5 848.6,654.5 853.8,657.1 858.9,659.5 864.1,661.3 869.3,662.8 874.4,663.7 879.6,664.0 884.8,663.8 889.9,663.0 895.1,661.7 900.2,660.0 905.4,657.8 910.6,655.2 915.7,652.2 920.9,607.1 926.1,603.8 931.2,600.5 936.4,597.2 941.5,594.1 946.7,591.1 951.9,588.5 957.0,586.2 962.2,584.4 967.3,583.1 972.5,582.3 977.7,582.0 982.8,582.3 988.0,625.1 993.2,626.5 998.3,628.3 1003.5,630.6 1008.6,633.3 1013.8,636.2 1019.0,639.4 1024.1,642.7 1029.3,646.0 1034.4,649.3 1039.6,652.4 1044.8,655.3 1049.9,657.9 1055.1,660.1 1060.3,661.8 1065.4,663.1 1070.6,663.8 1075.7,664.0 1080.9,663.6 1086.1,662.7 1091.2,661.3 1096.4,659.3 1101.5,657.0 1106.7,654.3 1111.9,651.3 1117.0,648.1 1122.2,644.8 1127.4,641.5 1132.5,638.2 1137.7,635.1 1142.8,632.3 1148.0,629.8" fill="none" stroke="#7aa9d6" stroke-width="3" filter="url(#glow)"/>
+</svg>

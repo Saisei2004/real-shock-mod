@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RE:AL SHOCK MOD</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <div class="screen-noise" aria-hidden="true"></div>
+    <main class="shell">
+      <section class="topbar" aria-label="system status">
+        <div class="brand">
+          <span class="brand-mark">RE</span>
+          <div>
+            <h1>RE:AL SHOCK MOD</h1>
+            <p id="deviceName">H6M を待機中</p>
+          </div>
+        </div>
+        <div class="status">
+          <span id="connDot" class="dot neutral"></span>
+          <span id="connText">起動中</span>
+        </div>
+      </section>
+
+      <section class="command-center" aria-label="active command">
+        <div class="command-frame">
+          <div class="corner top-left"></div>
+          <div class="corner top-right"></div>
+          <div class="corner bottom-left"></div>
+          <div class="corner bottom-right"></div>
+          <span class="eyebrow">ACTIVE COMMAND</span>
+          <strong id="activeCommand">なし</strong>
+          <p id="activeCommandDetail">none / command-priority</p>
+          <div class="command-rail" id="commandRail" aria-hidden="true">
+            <span data-command="death">DEATH</span>
+            <span data-command="damage">DMG</span>
+            <span data-command="startle">JOLT</span>
+            <span data-command="faltering">FALTER</span>
+            <span data-command="none">NONE</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-grid" aria-label="live dashboard">
+        <section class="panel bio-panel" aria-label="bio signals">
+          <div class="panel-head">
+            <h2>Bio Signal</h2>
+            <span id="lastSeen">--</span>
+          </div>
+          <div class="bpm">
+            <span id="bpm">--</span>
+            <span>bpm</span>
+          </div>
+          <div class="state-line">
+            <div id="state" class="state neutral">計測中</div>
+            <p id="stateDetail">RR interval を集めています。</p>
+          </div>
+          <div class="vital-strip">
+            <div>
+              <span>RMSSD</span>
+              <strong id="rmssd">-- ms</strong>
+            </div>
+            <div>
+              <span>SDNN</span>
+              <strong id="sdnn">-- ms</strong>
+            </div>
+            <div>
+              <span>pNN50</span>
+              <strong id="pnn50">-- %</strong>
+            </div>
+          </div>
+          <p class="ghost-line" id="mainBioSub">RMSSD -- / RR --</p>
+          <strong class="sr-mirror" id="mainBioBpm">-- bpm</strong>
+        </section>
+
+        <section class="panel game-panel" aria-label="biohazard status">
+          <div class="panel-head">
+            <h2>Biohazard</h2>
+            <span id="gameBridge">--</span>
+          </div>
+          <div class="hp-stack">
+            <div class="hp-read">
+              <strong id="mainGameHp">HP --</strong>
+              <span id="gameHp">--</span>
+            </div>
+            <div class="hp-bar" aria-hidden="true"><div id="hpFill"></div></div>
+          </div>
+          <p id="mainGameSub">RE9監視を待機中</p>
+          <p id="gameStatus">ゲーム監視を待機中</p>
+          <div class="detail-grid">
+            <div class="detail-row">
+              <span>Contact</span>
+              <strong id="contact">--</strong>
+            </div>
+            <div class="detail-row">
+              <span>Battery</span>
+              <strong id="battery">-- %</strong>
+            </div>
+            <div class="detail-row">
+              <span>Samples</span>
+              <strong id="samples">0 RR</strong>
+            </div>
+            <div class="detail-row">
+              <span>RR</span>
+              <strong id="rrLatest">-- ms</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel detector" aria-label="fear detection">
+          <div class="detector-main">
+            <span>Detection</span>
+            <strong id="detectPrimary">計測中</strong>
+            <p id="detectReasons">RR interval を集めています。</p>
+          </div>
+          <div class="score-stack">
+            <div class="score-row">
+              <div>
+                <span>びっくり</span>
+                <strong id="startleScore">0%</strong>
+              </div>
+              <div class="bar"><div id="startleBar"></div></div>
+            </div>
+            <div class="score-row">
+              <div>
+                <span>警戒/緊張</span>
+                <strong id="fearScore">0%</strong>
+              </div>
+              <div class="bar"><div id="fearBar"></div></div>
+            </div>
+            <div class="score-row">
+              <div>
+                <span>姿勢/体動</span>
+                <strong id="movementScore">0%</strong>
+              </div>
+              <div class="bar"><div id="movementBar"></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel chart-panel heart-chart" aria-label="heart rate chart">
+          <div class="panel-head">
+            <h2>Heart Rate</h2>
+            <span id="model">--</span>
+          </div>
+          <canvas id="hrChart" width="900" height="220"></canvas>
+        </section>
+
+        <section class="panel chart-panel rr-chart" aria-label="rr interval chart">
+          <div class="panel-head">
+            <h2>RR Interval</h2>
+            <span id="firmware">--</span>
+          </div>
+          <canvas id="rrChart" width="900" height="220"></canvas>
+        </section>
+
+        <section class="panel control-panel" aria-label="controls and command log">
+          <div class="panel-head">
+            <h2>Control</h2>
+            <span id="address">--</span>
+          </div>
+          <div class="recording-form">
+            <input id="recordingName" type="text" autocomplete="off" placeholder="保存名">
+            <button id="startRecording" type="button">Start</button>
+            <button id="stopRecording" type="button">Stop</button>
+          </div>
+          <div class="progress">
+            <div id="recordingProgress"></div>
+          </div>
+          <p id="recordingStatus">未録画</p>
+          <p id="recordingSaved" class="saved"></p>
+          <div class="debug-actions">
+            <button id="debugDamage" type="button">Damage</button>
+            <button id="debugDeath" type="button">Death</button>
+            <button id="debugStartle" type="button">Startle</button>
+            <button id="debugFaltering" type="button">Falter</button>
+            <button id="debugNone" type="button">None</button>
+          </div>
+          <div class="command-log">
+            <span>Command Log</span>
+            <strong id="commandLog">--</strong>
+          </div>
+          <div class="esp32-line">
+            <span>ESP32</span>
+            <strong id="esp32Status">disabled</strong>
+          </div>
+          <strong class="raw-line" id="raw">--</strong>
+        </section>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
