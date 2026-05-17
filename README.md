@@ -25,12 +25,12 @@ ESP32側はそのコマンドを受け取り、現実世界のプレイヤーに
 
 ## 今回使った主な材料
 
-| URL | 何か |
-|---|---|
-| [COOSPO 心拍センサー / ハートレートモニター](https://amzn.asia/d/03qclP31) | プレイヤーの心拍数とRR intervalを取る胸ベルト型センサー |
-| [RELX EMSベルト](https://amzn.asia/d/0725U7pu) | ESP32から制御する電撃ペナルティ側のベース装置 |
-| [DiyStudio ESP32 開発ボード](https://amzn.asia/d/06wo77h9) | PCからHTTPコマンドを受け取るWi-Fi/Bluetooth開発ボード |
-| [KKHMF 5V 1チャンネルリレーモジュール](https://amzn.asia/d/0ijeHtMs) | ESP32の信号で外部装置のON/OFFを切り替えるリレー |
+| 画像 | URL | 何か |
+|---|---|---|
+| <img src="https://m.media-amazon.com/images/I/51t4L53Lc+L._AC_SL1500_.jpg" width="80" alt="COOSPO 心拍センサー"> | [COOSPO 心拍センサー / ハートレートモニター](https://amzn.asia/d/03qclP31) | プレイヤーの心拍数とRR intervalを取る胸ベルト型センサー |
+| <img src="https://m.media-amazon.com/images/I/51hKRw0oDXL._AC_SL1000_.jpg" width="80" alt="RELX EMSベルト"> | [RELX EMSベルト](https://amzn.asia/d/0725U7pu) | ESP32から制御する電撃ペナルティ側のベース装置 |
+| <img src="https://m.media-amazon.com/images/I/71jILh4qbLL._AC_SL1500_.jpg" width="80" alt="DiyStudio ESP32 開発ボード"> | [DiyStudio ESP32 開発ボード](https://amzn.asia/d/06wo77h9) | PCからHTTPコマンドを受け取るWi-Fi/Bluetooth開発ボード |
+| <img src="https://m.media-amazon.com/images/I/61nTf-bRj4L._SL1000_.jpg" width="80" alt="KKHMF リレーモジュール"> | [KKHMF 5V 1チャンネルリレーモジュール](https://amzn.asia/d/0ijeHtMs) | ESP32の信号で外部装置のON/OFFを切り替えるリレー |
 
 ## これがやりたい
 
