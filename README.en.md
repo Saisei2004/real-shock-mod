@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/logo.png" alt="RE:AL SHOCK MOD logo">
+</p>
+
 # RE:AL SHOCK MOD
 
 ![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-2f81f7)
