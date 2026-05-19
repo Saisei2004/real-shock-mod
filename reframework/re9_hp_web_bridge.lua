@@ -1,6 +1,6 @@
 local STATUS_FILE = "re9_hp_web_status.json"
 local CONFIG_FILE = "re9_hp_web_config.json"
-local BRIDGE_VERSION = 5
+local BRIDGE_VERSION = 6
 
 local default_config = {
     enabled = true,
@@ -180,14 +180,17 @@ local function classify_vital(hp_percent, max_hp, context, reader)
     end
 
     if hp_percent ~= nil then
-        if hp_percent <= caution_percent then
+        if danger_percent ~= nil and hp_percent <= danger_percent then
             stage = "danger"
             low_hp = true
             faltering_low_hp = true
-            stage_source = bottom_caution ~= nil and "bottom_caution" or "fallback"
-        elseif fine_percent ~= nil and hp_percent <= fine_percent then
+            stage_source = "bottom_danger"
+        elseif hp_percent <= caution_percent then
             stage = "caution"
             low_hp = true
+            stage_source = bottom_caution ~= nil and "bottom_caution" or "fallback"
+        elseif fine_percent ~= nil and hp_percent <= fine_percent then
+            stage = "fine"
             stage_source = "bottom_fine"
         elseif stage == "unknown" then
             stage = "fine"

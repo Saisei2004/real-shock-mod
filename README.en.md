@@ -1,264 +1,96 @@
-<p align="center">
-  <img src="docs/images/logo.png" alt="RE:AL SHOCK MOD logo">
-</p>
-
 # RE:AL SHOCK MOD
 
-![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-2f81f7)
-![Python](https://img.shields.io/badge/Python-3.14%2B-3776ab)
-![BLE](https://img.shields.io/badge/BLE-COOSPO%20H6-86f0a8)
-![REFramework](https://img.shields.io/badge/REFramework-Lua%20Bridge-e3b45a)
-![ESP32](https://img.shields.io/badge/ESP32-Local%20HTTP-e65a4f)
+RE:AL SHOCK MOD is a local RE9 + H6 heart-rate monitor bridge for an **LED test device** driven by an ESP32.
 
-**In-game damage becomes a real electric shock.**
+This revision is not for real electric stimulation hardware. The ESP32 presses three test-device buttons and maps game/biometric events to LED intensity and duration.
 
-**RE:AL SHOCK MOD** is a local mod integration system for **BIOHAZARD Requiem / Resident Evil Requiem**. It watches the game state, reads the player's live heart-rate data, and sends commands to an **ESP32** when the player takes damage, dies, enters a low-HP faltering state, or physically startles.
+## Device Assumptions
 
-The ESP32 receives those commands and triggers an electric-shock penalty on the real-world player.  
-In other words: if the game hurts, reality answers.
+- `GPIO23=A`, `GPIO22=B`, `GPIO19=C`
+- A: intensity up
+- B: mode change
+- C: intensity down
+- Initial device level is treated as `-1`; pressing A once moves it to `0`
+- If level `0` remains for about 15 seconds, the device is treated as powered off
+- If level `0` has been idle for 13+ seconds, the ESP32 presses C once before the next output, then presses A `target + 1` times
+- On every fresh startup, the ESP32 presses B twice to enter mode 3
+- Maximum intensity is `15`
 
-Japanese version: [README.md](README.md)
-
-<p align="center">
-  <img src="docs/images/concept.png" alt="RE:AL SHOCK MOD concept">
-</p>
-
-## Target Game
-
-| Link | What it is |
-|---|---|
-| [Steam store page](https://store.steampowered.com/app/3764200/Resident_Evil_Requiem/) | Steam version of BIOHAZARD Requiem / Resident Evil Requiem |
-| [CAPCOM official page](https://www.residentevil.com/requiem/) | Official page for BIOHAZARD Requiem / Resident Evil Requiem |
-
-## Setup
-
-For the full copy-paste setup flow, from `git clone` to ESP32 URL configuration, see [this setup guide](docs/SETUP.en.md).
-
-## Main Parts Used
-
-### Hardware To Buy
-
-| Image | URL | What it is |
-|---|---|---|
-| <img src="https://m.media-amazon.com/images/I/51t4L53Lc+L._AC_SL1500_.jpg" width="80" alt="COOSPO heart-rate sensor"> | [COOSPO Heart Rate Monitor](https://amzn.asia/d/03qclP31) | Chest-strap heart-rate sensor used to read BPM and RR intervals |
-| <img src="https://m.media-amazon.com/images/I/51hKRw0oDXL._AC_SL1000_.jpg" width="80" alt="RELX EMS belt"> | [RELX EMS Belt](https://amzn.asia/d/0725U7pu) | Base device for the electric-shock penalty side |
-| <img src="https://m.media-amazon.com/images/I/71jILh4qbLL._AC_SL1500_.jpg" width="80" alt="DiyStudio ESP32 development board"> | [DiyStudio ESP32 Development Board](https://amzn.asia/d/06wo77h9) | Wi-Fi/Bluetooth board that receives HTTP commands from the PC |
-| <img src="https://m.media-amazon.com/images/I/61nTf-bRj4L._SL1000_.jpg" width="80" alt="KKHMF relay module"> | [KKHMF 5V 1-Channel Relay Module](https://amzn.asia/d/0ijeHtMs) | Relay module used to switch an external device from an ESP32 signal |
-
-## What This Is Trying To Do
-
-The player plays BIOHAZARD normally.  
-Behind the scenes, the PC watches both the game and the player's body.
-
-| What happens | What the mod reads | What happens in reality |
-|---|---|---|
-| The player is bitten or attacked | HP drop, damage counter | Sends `damage` to ESP32, electric shock |
-| The player dies | HP 0, death state | Sends `death` to ESP32, strongest penalty |
-| HP enters danger range | HP at or below 16.75% | Sends `faltering`, warning shock |
-| The player actually startles | RR interval drop, BPM rise | Sends `startle`, reaction penalty |
-| Nothing is happening | Normal state | Sends `none`, clears output |
-
-The concept is simple.
-
-```text
-REAL DAMAGE. REAL SHOCK. REAL SURVIVAL.
-```
-
-## System Overview
-
-```mermaid
-flowchart LR
-    A["BIOHAZARD Requiem"] -->|"HP / Damage / Death"| B["REFramework Lua Bridge"]
-    C["COOSPO H6 heart-rate sensor"] -->|"BPM / RR Interval"| D["RE:AL SHOCK MOD Server"]
-    B --> D
-    D --> E["Browser UI"]
-    D --> F["Command Engine"]
-    F -->|"HTTP JSON"| G["ESP32"]
-    G --> H["Electric-Shock Penalty Device"]
-```
-
-What is included in this repository:
-
-| Part | Role |
-|---|---|
-| Python server | Combines BLE heart-rate data, REFramework bridge data, ESP32 output, and the Web UI |
-| REFramework Lua Bridge | Exposes HP and damage state from the game |
-| Browser UI | Shows biometric signals, game status, and the active command on one screen |
-| ESP32 sender | Sends command JSON to an ESP32 on the same network |
-| Sample biometric data | My real heart-rate logs used while tuning startle detection |
-
-## Command Priority
-
-When multiple events happen at the same time, the strongest command wins.
+## Priority
 
 ```text
 death > damage > startle > faltering > none
 ```
 
-| Priority | Command | Meaning |
-|---:|---|---|
-| 4 | `death` | Death. Highest priority |
-| 3 | `damage` | Damage taken, HP drop |
-| 2 | `startle` | Real-world startle response |
-| 1 | `faltering` | Low-HP danger / faltering |
-| 0 | `none` | Nothing happening / clear output |
+`faltering` keeps updating its elapsed timer even when a higher-priority event is active.
 
-## Screens And Commands
+## Output Rules
 
-### Normal: `none`
+### none
 
-Even when nothing is happening, the app sends `none` to the ESP32. This is the idle state that tells the external device to clear its output.
+Return the LED test device to level `0` or below.
 
-| Gameplay | RE:AL SHOCK MOD UI |
-|---|---|
-| ![Normal gameplay](docs/images/re9-normal-play.png) | ![Normal UI](docs/images/ui-normal.png) |
+### damage
 
-### Damage: `damage`
+| Remaining HP | Intensity | Duration |
+|---:|---:|---:|
+| 0 - 16.75% | 14 | 4.0s |
+| - 33.5% | 12 | 3.5s |
+| - 50.25% | 10 | 3.0s |
+| - 67% | 8 | 2.5s |
+| - 83.75% | 6 | 2.0s |
+| - 100% | 4 | 1.0s |
 
-If HP drops, reality answers.  
-This is the most direct part of the mod.
+### faltering
 
-| Gameplay | RE:AL SHOCK MOD UI |
-|---|---|
-| ![Damage state](docs/images/re9-damage.png) | ![Damage command UI](docs/images/ui-damage.png) |
+Starts when the game reports Danger. The bridge prefers the game vital stage and `get_BottomOfVitalDanger` over a fixed percentage.
 
-```json
-{
-  "command": "damage",
-  "priority": 3,
-  "payload": {
-    "hp_percent": 42,
-    "damage_count": 7
-  }
-}
+Intensity starts at `3` for the first 3 seconds. It then increases by 1 after 2 more seconds, then after 3 more seconds, then after 4 more seconds, up to `10`.
+
+### death
+
+Intensity `15` for 10 seconds.
+
+### startle
+
+Random intensity `5 - 15`, random duration `1 - 4 seconds`.
+
+## Setup
+
+```bash
+python -m pip install -r requirements.txt
+export REAL_SHOCK_ESP32_SERIAL_PORT=/dev/cu.usbserial-120
+python h6_monitor_server.py --open-browser
 ```
 
-### Faltering: `faltering`
+## ESP32 Firmware
 
-When HP drops to **16.75% or lower**, the player is in the danger zone. This is meant for a warning shock rather than the strongest penalty.
-
-| Gameplay | RE:AL SHOCK MOD UI |
-|---|---|
-| ![Faltering state](docs/images/re9-faltering.png) | ![Faltering command UI](docs/images/ui-faltering.png) |
-
-### Death: `death`
-
-Game over is the highest-priority command.  
-Even if `damage` or `startle` is also active, `death` wins.
-
-| Gameplay | RE:AL SHOCK MOD UI |
-|---|---|
-| ![Game over](docs/images/re9-game-over.png) | ![Death command UI](docs/images/ui-death.png) |
-
-### Startle: `startle`
-
-Even if the game does not report damage, the app can detect "you just flinched" from a sudden heart-rate pattern.  
-The current logic tracks the reaction for **3 seconds** to reduce false positives from posture changes or yawning.
-
-| Reference gameplay | RE:AL SHOCK MOD UI |
-|---|---|
-| ![Startle-prone encounter](docs/images/re9-startle.jpg) | ![Startle command UI](docs/images/ui-startle.png) |
-
-## What The Biometric Side Watches
-
-Raw BPM alone is weak, so the detector also watches RR interval behavior.
-
-| Signal | What the system looks for |
-|---|---|
-| BPM | Delayed rise after a reaction |
-| RR interval | Sudden shortening right after a startle |
-| RMSSD / pNN50 | Often drops when tension increases |
-| Movement score | Posture changes, yawns, and noisy false-positive candidates |
-| Difference from recent baseline | How far the player deviates from their own normal state |
-
-The included CSV data contains real logs from horror movies, BIOHAZARD gameplay, Gonjiam, posture-change tests, and yawning. The detector was tuned by comparing real startles against body-movement false positives.
-
-## JSON Sent To ESP32
-
-Set the ESP32 HTTP endpoint:
-
-```powershell
-$env:REAL_SHOCK_ESP32_URL = "http://192.168.0.50/command"
-```
-
-Example payload:
-
-```json
-{
-  "system": "RE:AL SHOCK MOD",
-  "command": "damage",
-  "label": "ダメージ",
-  "priority": 3,
-  "source": "re9-bridge",
-  "issued_at": "2026-05-18T02:18:42.120",
-  "payload": {
-    "hp_percent": 42,
-    "damage_count": 7
-  }
-}
-```
-
-The ESP32 can switch shock patterns based on the `command` value.
-
-| Command | Example use |
-|---|---|
-| `none` | Clear output |
-| `faltering` | Light warning |
-| `startle` | Short electric shock |
-| `damage` | Damage penalty |
-| `death` | Game-over penalty |
-
-## API
-
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/` | Main UI |
-| `GET` | `/api/snapshot` | Full state |
-| `GET` | `/api/game` | Game-side state |
-| `GET` | `/api/commands` | Active command state |
-| `GET` | `/api/esp32` | ESP32 sender state |
-| `POST` | `/api/debug/command/death` | Debug death command |
-| `POST` | `/api/debug/command/damage` | Debug damage command |
-| `POST` | `/api/debug/command/startle` | Debug startle command |
-| `POST` | `/api/debug/command/faltering` | Debug faltering command |
-| `POST` | `/api/debug/command/none` | Clear command |
-
-## Extra: Real Biometric Data
-
-My real COOSPO H6 biometric logs are included.
+Arduino sketch:
 
 ```text
-docs/sample-data/biometric/
+esp32/real_shock_led_controller/real_shock_led_controller.ino
 ```
 
-| Data | Contents |
-|---|---|
-| `relax.csv` | Relaxed baseline |
-| `resident-evil.csv` | BIOHAZARD gameplay |
-| `horror-movie.csv` | Horror movie |
-| `horror-friends-house.csv` | Horror movie "friend's house" |
-| `gonjiam.csv` | Long horror movie session, Gonjiam |
-| `the-girl-encounter.csv` | The Girl encounter |
-| `yawn.csv` | Yawn false-positive candidate |
-| `posture-heavy.csv` / `single-posture.csv` | Posture-change tests |
-
-See [docs/sample-data/biometric/README.md](docs/sample-data/biometric/README.md) and [manifest.json](docs/sample-data/biometric/manifest.json).
-
-## Repository Layout
+Serial commands:
 
 ```text
-h6_monitor_server.py          aiohttp + BLE + RE9 + ESP32 server
-static/                       One-screen browser UI
-reframework/                  REFramework Lua Bridge
-scripts/                      Install, launch, and shortcut scripts
-docs/images/                  README images
-docs/sample-data/biometric/   Real biometric CSV data
-Install-RE-AL-SHOCK-MOD.cmd   Double-click installer
-Start-RE-AL-SHOCK-MOD.cmd     Double-click launcher
+status
+none
+level 8
+button A
+event damage 14 4000 1
+event death 15 10000 2
 ```
 
-## Notice
+Debug tool:
 
-This is a personal experimental local mod-integration project. It is not affiliated with Capcom, BIOHAZARD, Resident Evil, Steam, COOSPO, or REFramework.
+```bash
+python tools/esp32_debug.py status
+python tools/esp32_debug.py fire 10 3
+python tools/esp32_debug.py event damage 14 4000 1
+python tools/esp32_debug.py none
+```
 
-Electrical stimulation is your own responsibility. The PC app only sends commands to an ESP32. Output limits, repeated-output prevention, emergency stop behavior, and any other safety controls must be handled by the ESP32 firmware or the external device.
+## Safety Boundary
+
+This repository targets an LED test device only. Do not use it to build, control, or operate equipment that applies electric stimulation to people or animals.

@@ -69,12 +69,20 @@ Check bridge status only:
 .\scripts\Install-Re9Bridge.ps1
 ```
 
-## 5. Set The ESP32 URL
+## 5. Set The ESP32 USB Serial Port
 
-If you want to send commands to an ESP32, set the URL before launching.
+This revision sends one-line commands to the ESP32 over USB serial for the LED test device. On the current macOS test setup, the default is `/dev/cu.usbserial-120`.
 
 ```powershell
-$env:REAL_SHOCK_ESP32_URL = "http://192.168.0.50/command"
+$env:REAL_SHOCK_ESP32_SERIAL_PORT = "COM3"
+$env:REAL_SHOCK_ESP32_SERIAL_BAUD = "115200"
+```
+
+macOS / zsh:
+
+```bash
+export REAL_SHOCK_ESP32_SERIAL_PORT=/dev/cu.usbserial-120
+export REAL_SHOCK_ESP32_SERIAL_BAUD=115200
 ```
 
 Main environment variables:
@@ -83,7 +91,8 @@ Main environment variables:
 $env:REAL_SHOCK_PORT = "8765"
 $env:REAL_SHOCK_H6_ADDRESS = ""
 $env:REAL_SHOCK_H6_NAME_PREFIX = "H6"
-$env:REAL_SHOCK_ESP32_URL = "http://192.168.0.50/command"
+$env:REAL_SHOCK_ESP32_SERIAL_PORT = "COM3"
+$env:REAL_SHOCK_ESP32_SERIAL_BAUD = "115200"
 $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
 ```
 
@@ -92,8 +101,11 @@ $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
 | `REAL_SHOCK_PORT` | Local server port |
 | `REAL_SHOCK_H6_ADDRESS` | BLE address. Leave empty for auto-detect |
 | `REAL_SHOCK_H6_NAME_PREFIX` | Heart-rate sensor name prefix |
-| `REAL_SHOCK_ESP32_URL` | HTTP URL used to send commands to ESP32 |
+| `REAL_SHOCK_ESP32_SERIAL_PORT` | ESP32 USB serial port |
+| `REAL_SHOCK_ESP32_SERIAL_BAUD` | ESP32 baud rate. Default: 115200 |
 | `REAL_SHOCK_ESP32_TIMEOUT` | ESP32 send timeout in seconds |
+
+HTTP mode is still available for compatibility. It is used only when `REAL_SHOCK_ESP32_SERIAL_PORT` is empty and `REAL_SHOCK_ESP32_URL` is set.
 
 ## 6. Launch
 

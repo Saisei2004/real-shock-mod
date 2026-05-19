@@ -4,6 +4,7 @@ import csv
 import json
 import math
 import os
+import random
 import re
 import statistics
 import subprocess
@@ -29,13 +30,16 @@ TARGET_NAME_PREFIX = os.environ.get("REAL_SHOCK_H6_NAME_PREFIX", "H6").strip().u
 DEFAULT_HOST = os.environ.get("REAL_SHOCK_HOST", "127.0.0.1")
 DEFAULT_PORT = int(os.environ.get("REAL_SHOCK_PORT", "8765"))
 ESP32_COMMAND_URL = os.environ.get("REAL_SHOCK_ESP32_URL", "").strip()
+ESP32_SERIAL_PORT = os.environ.get("REAL_SHOCK_ESP32_SERIAL_PORT", "").strip()
+ESP32_SERIAL_BAUD = int(os.environ.get("REAL_SHOCK_ESP32_SERIAL_BAUD", "115200"))
 ESP32_TIMEOUT_SECONDS = float(os.environ.get("REAL_SHOCK_ESP32_TIMEOUT", "2.0"))
 
 RE9_APPID = "3764200"
 RE9_PROCESS_NAMES = {"re9.exe", "re9"}
 RE9_STATUS_FILE = "re9_hp_web_status.json"
 RE9_COMMAND_LOG = RUNTIME_DIR / "re9_h6_commands.jsonl"
-RE9_FALTERING_HP_PERCENT = 16.75
+RE9_FALTERING_FALLBACK_HP_PERCENT = 16.75
+FALTERING_FORCE_EVENT_SECONDS = 1.0
 
 COMMAND_PRIORITY = {
     "none": 0,
@@ -58,6 +62,15 @@ COMMAND_DEFAULT_TTL = {
     "startle": 3.5,
     "faltering": 1.2,
 }
+
+DAMAGE_OUTPUT_TABLE = [
+    (16.75, 14, 4.0),
+    (33.5, 12, 3.5),
+    (50.25, 10, 3.0),
+    (67.0, 8, 2.5),
+    (83.75, 6, 2.0),
+    (100.0, 4, 1.0),
+]
 
 HR_SERVICE = "0000180d-0000-1000-8000-00805f9b34fb"
 HR_MEASUREMENT = "00002a37-0000-1000-8000-00805f9b34fb"
@@ -309,6 +322,87 @@ def _hp_percent(hp, max_hp, bridge):
     return max(0.0, min(100.0, hp / max_hp * 100.0))
 
 
+def default_serial_port():
+    if ESP32_SERIAL_PORT:
+        return ESP32_SERIAL_PORT
+    candidate = Path("/dev/cu.usbserial-120")
+    return str(candidate) if candidate.exists() else ""
+
+
+def damage_output_for_hp(hp_percent):
+    if hp_percent is None:
+        return {"intensity": 8, "duration_ms": 2500, "reason": "damage fallback"}
+    for threshold, intensity, seconds in DAMAGE_OUTPUT_TABLE:
+        if hp_percent <= threshold:
+            return {
+                "intensity": intensity,
+                "duration_ms": int(seconds * 1000),
+                "reason": f"hp <= {threshold}%",
+            }
+    return {"intensity": 4, "duration_ms": 1000, "reason": "hp > 83.75%"}
+
+
+def faltering_intensity(elapsed_seconds):
+    elapsed_seconds = max(0.0, float(elapsed_seconds or 0.0))
+    if elapsed_seconds <= 3.0:
+        return 3
+    intensity = 3
+    spent = 3.0
+    step_seconds = 2.0
+    while intensity < 10 and elapsed_seconds >= spent + step_seconds:
+        spent += step_seconds
+        intensity += 1
+        step_seconds += 1.0
+    return min(10, intensity)
+
+
+def output_for_event(event):
+    kind = event.get("kind") or "none"
+    payload = event.get("payload") or {}
+
+    if kind == "none":
+        return {
+            "kind": "none",
+            "intensity": 0,
+            "duration_ms": 0,
+            "reason": "idle",
+        }
+    if kind == "death":
+        return {
+            "kind": kind,
+            "intensity": 15,
+            "duration_ms": 10000,
+            "reason": "death fixed",
+        }
+    if kind == "damage":
+        hp_percent = _num(payload.get("hp_percent"))
+        result = damage_output_for_hp(hp_percent)
+        result["kind"] = kind
+        return result
+    if kind == "startle":
+        return {
+            "kind": kind,
+            "intensity": random.randint(5, 15),
+            "duration_ms": random.randint(1000, 4000),
+            "reason": "startle random",
+        }
+    if kind == "faltering":
+        elapsed = _num(payload.get("elapsed_seconds")) or 0.0
+        return {
+            "kind": kind,
+            "intensity": faltering_intensity(elapsed),
+            "duration_ms": 1200,
+            "reason": f"faltering {round(elapsed, 1)}s",
+        }
+
+    return {
+        "kind": "none",
+        "intensity": 0,
+        "duration_ms": 0,
+        "reason": f"unknown kind {kind}",
+    }
+
+
 class CommandBus:
     def __init__(self, log_path):
         self.log_path = log_path
@@ -414,14 +508,21 @@ class CommandBus:
 
 
 class ESP32CommandSender:
-    def __init__(self, command_bus, url):
+    def __init__(self, command_bus, url, serial_port=None, serial_baud=115200):
         self.command_bus = command_bus
         self.url = url
+        self.serial_port = serial_port or default_serial_port()
+        self.serial_baud = serial_baud
+        self.serial = None
+        self.serial_fd = None
         self.last_sent_id = 0
         self.latest = {
-            "enabled": bool(url),
+            "enabled": bool(url or self.serial_port),
+            "transport": "serial" if self.serial_port else ("http" if url else None),
             "url": url or None,
-            "status": "disabled" if not url else "waiting",
+            "serial_port": self.serial_port or None,
+            "serial_baud": self.serial_baud if self.serial_port else None,
+            "status": "disabled" if not (url or self.serial_port) else "waiting",
             "last_sent": None,
             "last_error": None,
         }
@@ -430,7 +531,7 @@ class ESP32CommandSender:
         return dict(self.latest)
 
     async def run(self):
-        if not self.url:
+        if not self.url and not self.serial_port:
             return
         timeout = ClientTimeout(total=ESP32_TIMEOUT_SECONDS)
         async with ClientSession(timeout=timeout) as session:
@@ -444,6 +545,7 @@ class ESP32CommandSender:
                 await asyncio.sleep(0.2)
 
     async def _send_event(self, session, event):
+        output = output_for_event(event)
         payload = {
             "system": "RE:AL SHOCK MOD",
             "command": event.get("kind"),
@@ -452,12 +554,16 @@ class ESP32CommandSender:
             "source": event.get("source"),
             "issued_at": event.get("iso_time"),
             "payload": event.get("payload") or {},
+            "output": output,
         }
         try:
-            async with session.post(self.url, json=payload) as response:
-                text = await response.text()
-                if response.status >= 400:
-                    raise RuntimeError(f"HTTP {response.status}: {text[:160]}")
+            if self.serial_port:
+                await asyncio.to_thread(self._send_serial, event, output)
+            elif self.url:
+                async with session.post(self.url, json=payload) as response:
+                    text = await response.text()
+                    if response.status >= 400:
+                        raise RuntimeError(f"HTTP {response.status}: {text[:160]}")
             self.last_sent_id = event.get("id", self.last_sent_id)
             self.latest.update({
                 "enabled": True,
@@ -467,6 +573,7 @@ class ESP32CommandSender:
                     "kind": event.get("kind"),
                     "label": event.get("label"),
                     "iso_time": event.get("iso_time"),
+                    "output": output,
                 },
                 "last_error": None,
             })
@@ -477,6 +584,53 @@ class ESP32CommandSender:
                 "last_error": str(exc),
             })
 
+    def _send_serial(self, event, output):
+        if self.serial is None and self.serial_fd is None:
+            try:
+                import serial
+            except ImportError as exc:
+                if not self.serial_port.startswith("/dev/"):
+                    raise RuntimeError("pyserial is required for non-POSIX serial ports") from exc
+                self.serial_fd = self._open_posix_serial()
+            else:
+                self.serial = serial.Serial(
+                    self.serial_port,
+                    self.serial_baud,
+                    timeout=ESP32_TIMEOUT_SECONDS,
+                    write_timeout=ESP32_TIMEOUT_SECONDS,
+                )
+            time.sleep(1.8)
+            if self.serial is not None:
+                self.serial.reset_input_buffer()
+
+        kind = output.get("kind") or event.get("kind") or "none"
+        intensity = int(output.get("intensity") or 0)
+        duration_ms = int(output.get("duration_ms") or 0)
+        event_id = int(event.get("id") or 0)
+        line = f"event {kind} {intensity} {duration_ms} {event_id}\n"
+        if self.serial is not None:
+            self.serial.write(line.encode("ascii"))
+            self.serial.flush()
+        else:
+            os.write(self.serial_fd, line.encode("ascii"))
+
+    def _open_posix_serial(self):
+        import termios
+        fd = os.open(self.serial_port, os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
+        attrs = termios.tcgetattr(fd)
+        attrs[0] = 0
+        attrs[1] = 0
+        attrs[2] = termios.CS8 | termios.CREAD | termios.CLOCAL
+        attrs[3] = 0
+        baud = getattr(termios, f"B{self.serial_baud}", termios.B115200)
+        attrs[4] = baud
+        attrs[5] = baud
+        attrs[6][termios.VMIN] = 0
+        attrs[6][termios.VTIME] = 0
+        termios.tcsetattr(fd, termios.TCSANOW, attrs)
+        termios.tcflush(fd, termios.TCIOFLUSH)
+        return fd
+
 
 class GameMonitor:
     def __init__(self, command_bus, game_dir=None):
@@ -485,6 +639,9 @@ class GameMonitor:
         self.previous_hp = None
         self.previous_damage_count = 0
         self.death_latched = False
+        self.faltering_started_at = None
+        self.last_faltering_event_at = 0
+        self.last_faltering_intensity = None
         self.latest = self.empty_snapshot()
         self.on_change = None
 
@@ -556,9 +713,15 @@ class GameMonitor:
         max_hp = _num(active_bridge.get("max_hp")) if active_bridge else None
         hp_percent = _hp_percent(hp, max_hp, active_bridge)
         bridge_damage_count = int(_num(active_bridge.get("damage_count")) or 0) if active_bridge else 0
+        low_hp_stage = active_bridge.get("low_hp_stage") if active_bridge else None
+        danger_percent = _num(active_bridge.get("danger_percent")) if active_bridge else None
         faltering = bool(active_bridge and active_bridge.get("faltering_low_hp"))
-        if hp_percent is not None and hp_percent <= RE9_FALTERING_HP_PERCENT:
+        if str(low_hp_stage or "").lower() == "danger":
             faltering = True
+        elif hp_percent is not None and danger_percent is not None and hp_percent <= danger_percent:
+            faltering = True
+        elif hp_percent is not None and not active_bridge:
+            faltering = hp_percent <= RE9_FALTERING_FALLBACK_HP_PERCENT
 
         if active_bridge and bridge_damage_count > self.previous_damage_count:
             amount = _num(active_bridge.get("last_damage"))
@@ -607,15 +770,33 @@ class GameMonitor:
             emitted = emitted or bool(event)
 
         if faltering and not dead:
+            if self.faltering_started_at is None:
+                self.faltering_started_at = now
+                self.last_faltering_event_at = 0
+                self.last_faltering_intensity = None
+            elapsed = now - self.faltering_started_at
+            intensity = faltering_intensity(elapsed)
+            force_faltering_event = (
+                intensity != self.last_faltering_intensity or
+                now - self.last_faltering_event_at >= FALTERING_FORCE_EVENT_SECONDS
+            )
             event = self.command_bus.issue("faltering", "re9-bridge", {
                 "hp": hp,
                 "max_hp": max_hp,
                 "hp_percent": hp_percent,
-                "threshold_percent": RE9_FALTERING_HP_PERCENT,
-                "low_hp_stage": active_bridge.get("low_hp_stage") if active_bridge else None,
-            }, ttl=1.2, force_event=False)
+                "danger_percent": danger_percent,
+                "fallback_threshold_percent": RE9_FALTERING_FALLBACK_HP_PERCENT,
+                "low_hp_stage": low_hp_stage,
+                "elapsed_seconds": round(elapsed, 3),
+                "intensity": intensity,
+            }, ttl=1.2, force_event=force_faltering_event)
+            if event:
+                self.last_faltering_event_at = now
+                self.last_faltering_intensity = intensity
             emitted = emitted or bool(event)
         else:
+            self.faltering_started_at = None
+            self.last_faltering_intensity = None
             event = self.command_bus.deactivate("faltering", source="re9-bridge")
             emitted = emitted or bool(event)
 
@@ -646,8 +827,10 @@ class GameMonitor:
                 "hp_percent": hp_percent,
                 "low_hp": bool(active_bridge and active_bridge.get("low_hp")),
                 "faltering_low_hp": faltering,
-                "faltering_threshold_percent": RE9_FALTERING_HP_PERCENT,
-                "low_hp_stage": active_bridge.get("low_hp_stage") if active_bridge else None,
+                "faltering_elapsed_seconds": round(now - self.faltering_started_at, 3) if self.faltering_started_at else 0,
+                "faltering_intensity": self.last_faltering_intensity,
+                "faltering_fallback_threshold_percent": RE9_FALTERING_FALLBACK_HP_PERCENT,
+                "low_hp_stage": low_hp_stage,
                 "last_damage": _num(active_bridge.get("last_damage")) if active_bridge else None,
                 "damage_count": bridge_damage_count,
                 "reader": active_bridge.get("reader") if active_bridge else None,
@@ -1372,7 +1555,7 @@ class H6Monitor:
 
 
 command_bus = CommandBus(RE9_COMMAND_LOG)
-command_sender = ESP32CommandSender(command_bus, ESP32_COMMAND_URL)
+command_sender = ESP32CommandSender(command_bus, ESP32_COMMAND_URL, ESP32_SERIAL_PORT, ESP32_SERIAL_BAUD)
 game_monitor = GameMonitor(command_bus)
 monitor = H6Monitor(command_bus=command_bus, game_monitor=game_monitor, command_sender=command_sender)
 game_monitor.on_change = monitor.broadcast

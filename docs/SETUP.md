@@ -69,12 +69,22 @@ Lua Bridgeだけ入れたい場合:
 .\scripts\Install-Re9Bridge.ps1
 ```
 
-## 5. ESP32へ送るURLを設定する
+## 5. ESP32のUSBシリアルを設定する
 
-ESP32へコマンドを送る場合は、起動前にURLを指定します。
+この版はLEDテストデバイス用のESP32へ、USBシリアルで1行コマンドを送ります。Macで今回のテスト構成なら既定値は `/dev/cu.usbserial-120` です。
+
+PowerShell:
 
 ```powershell
-$env:REAL_SHOCK_ESP32_URL = "http://192.168.0.50/command"
+$env:REAL_SHOCK_ESP32_SERIAL_PORT = "COM3"
+$env:REAL_SHOCK_ESP32_SERIAL_BAUD = "115200"
+```
+
+macOS / zsh:
+
+```bash
+export REAL_SHOCK_ESP32_SERIAL_PORT=/dev/cu.usbserial-120
+export REAL_SHOCK_ESP32_SERIAL_BAUD=115200
 ```
 
 設定できる主な環境変数:
@@ -83,7 +93,8 @@ $env:REAL_SHOCK_ESP32_URL = "http://192.168.0.50/command"
 $env:REAL_SHOCK_PORT = "8765"
 $env:REAL_SHOCK_H6_ADDRESS = ""
 $env:REAL_SHOCK_H6_NAME_PREFIX = "H6"
-$env:REAL_SHOCK_ESP32_URL = "http://192.168.0.50/command"
+$env:REAL_SHOCK_ESP32_SERIAL_PORT = "COM3"
+$env:REAL_SHOCK_ESP32_SERIAL_BAUD = "115200"
 $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
 ```
 
@@ -92,8 +103,11 @@ $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
 | `REAL_SHOCK_PORT` | ローカルサーバーのポート |
 | `REAL_SHOCK_H6_ADDRESS` | BLEアドレス指定。空なら自動検出 |
 | `REAL_SHOCK_H6_NAME_PREFIX` | 心拍センサ名の先頭 |
-| `REAL_SHOCK_ESP32_URL` | ESP32へ送るHTTP URL |
+| `REAL_SHOCK_ESP32_SERIAL_PORT` | ESP32のUSBシリアルポート |
+| `REAL_SHOCK_ESP32_SERIAL_BAUD` | ESP32のボーレート。既定は115200 |
 | `REAL_SHOCK_ESP32_TIMEOUT` | ESP32送信タイムアウト秒 |
+
+HTTP送信も互換用に残しています。`REAL_SHOCK_ESP32_SERIAL_PORT` が空で `REAL_SHOCK_ESP32_URL` が設定されている場合だけ HTTP JSON を使います。
 
 ## 6. 起動する
 

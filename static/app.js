@@ -269,7 +269,11 @@ function updateGame(game, commands, esp32) {
   const recent = commands?.recent || [];
   fields.activeCommand.className = active.kind || "none";
   fields.activeCommand.textContent = active.label || active.kind || "none";
-  fields.activeCommandDetail.textContent = `${active.kind || "none"} / ${active.source || "--"}`;
+  const output = esp32?.last_sent?.output;
+  const outputText = output
+    ? ` / Lv${output.intensity} ${fmt((output.duration_ms || 0) / 1000, "s", 1)}`
+    : "";
+  fields.activeCommandDetail.textContent = `${active.kind || "none"} / ${active.source || "--"}${outputText}`;
   document.body.classList.remove("command-none", "command-faltering", "command-startle", "command-damage", "command-death");
   document.body.classList.add(`command-${active.kind || "none"}`);
   fields.commandLog.textContent = recent.length
@@ -277,7 +281,9 @@ function updateGame(game, commands, esp32) {
     : "--";
   if (esp32?.enabled) {
     const last = esp32.last_sent?.kind ? ` / ${esp32.last_sent.kind}` : "";
-    fields.esp32Status.textContent = `${esp32.status || "waiting"}${last}`;
+    const transport = esp32.transport ? `${esp32.transport}:` : "";
+    const serial = esp32.serial_port ? ` ${esp32.serial_port}` : "";
+    fields.esp32Status.textContent = `${transport}${esp32.status || "waiting"}${last}${serial}`;
   } else {
     fields.esp32Status.textContent = "disabled";
   }
@@ -424,7 +430,10 @@ function demoSnapshot(kind) {
         hp: demo.hp,
         max_hp: 100,
         hp_percent: demo.hp,
-        faltering_low_hp: demo.hp > 0 && demo.hp <= 16.75,
+        faltering_low_hp: demo.kind === "faltering",
+        low_hp_stage: demo.kind === "faltering" ? "danger" : "fine",
+        faltering_elapsed_seconds: demo.kind === "faltering" ? 8 : 0,
+        faltering_intensity: demo.kind === "faltering" ? 5 : null,
       },
     },
     commands: {
@@ -437,6 +446,9 @@ function demoSnapshot(kind) {
       last_sent: {
         kind: demo.kind,
         label: demo.label,
+        output: demo.kind === "none"
+          ? { intensity: 0, duration_ms: 0 }
+          : { intensity: demo.kind === "death" ? 15 : demo.kind === "faltering" ? 5 : demo.kind === "damage" ? 10 : 8, duration_ms: demo.kind === "death" ? 10000 : 3000 },
       },
     },
     history,
