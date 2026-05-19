@@ -1,7 +1,16 @@
+#include <BLE2902.h>
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+
 struct Button {
   char name;
   int pin;
 };
+
+const char *BLE_DEVICE_NAME = "RealShockLED";
+const char *BLE_SERVICE_UUID = "6d8f0001-7f4f-4f1d-9b55-1f4a6c3f3a10";
+const char *BLE_COMMAND_UUID = "6d8f0002-7f4f-4f1d-9b55-1f4a6c3f3a10";
 
 const Button BUTTONS[] = {
   {'A', 23}, // intensity up
@@ -18,6 +27,9 @@ const unsigned long ZERO_STALE_MS = 13000;
 
 char command[128];
 int commandLength = 0;
+char bleCommand[128];
+bool bleCommandReady = false;
+bool bleConnected = false;
 int currentLevel = -1;
 int currentMode = 1;
 unsigned long zeroSinceMs = 0;
@@ -25,6 +37,36 @@ bool outputActive = false;
 unsigned long outputUntilMs = 0;
 int activeEventId = 0;
 char activeKind[20] = "none";
+
+void queueBleCommand(const char *value) {
+  int index = 0;
+  while (value[index] != '\0' && value[index] != '\n' && value[index] != '\r' && index < (int)sizeof(bleCommand) - 1) {
+    bleCommand[index] = value[index];
+    index++;
+  }
+  bleCommand[index] = '\0';
+  bleCommandReady = index > 0;
+}
+
+class CommandCallbacks : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *characteristic) {
+    String value = characteristic->getValue();
+    queueBleCommand(value.c_str());
+  }
+};
+
+class ServerCallbacks : public BLEServerCallbacks {
+  void onConnect(BLEServer *server) {
+    bleConnected = true;
+    Serial.println("BLE connected");
+  }
+
+  void onDisconnect(BLEServer *server) {
+    bleConnected = false;
+    Serial.println("BLE disconnected");
+    BLEDevice::startAdvertising();
+  }
+};
 
 int pinForButton(char name) {
   for (int i = 0; i < 3; i++) {
@@ -233,7 +275,27 @@ void setup() {
 
   delay(600);
   powerOnToZeroAndMode3();
-  Serial.println("READY real_shock_led_controller A=23 B=22 C=19 mode=3 level=0");
+
+  BLEDevice::init(BLE_DEVICE_NAME);
+  BLEServer *server = BLEDevice::createServer();
+  server->setCallbacks(new ServerCallbacks());
+  BLEService *service = server->createService(BLE_SERVICE_UUID);
+  BLECharacteristic *commandCharacteristic = service->createCharacteristic(
+    BLE_COMMAND_UUID,
+    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR
+  );
+  commandCharacteristic->setCallbacks(new CommandCallbacks());
+  commandCharacteristic->addDescriptor(new BLE2902());
+  service->start();
+
+  BLEAdvertising *advertising = BLEDevice::getAdvertising();
+  advertising->addServiceUUID(BLE_SERVICE_UUID);
+  advertising->setScanResponse(true);
+  advertising->setMinPreferred(0x06);
+  advertising->setMinPreferred(0x12);
+  BLEDevice::startAdvertising();
+
+  Serial.println("READY RealShockLED BLE A=23 B=22 C=19 mode=3 level=0");
 }
 
 void loop() {
@@ -248,6 +310,14 @@ void loop() {
     } else if (commandLength < (int)sizeof(command) - 1) {
       command[commandLength++] = c;
     }
+  }
+
+  if (bleCommandReady) {
+    char localCommand[128];
+    strncpy(localCommand, bleCommand, sizeof(localCommand) - 1);
+    localCommand[sizeof(localCommand) - 1] = '\0';
+    bleCommandReady = false;
+    handleCommand(localCommand);
   }
 
   if (outputActive && (long)(millis() - outputUntilMs) >= 0) {

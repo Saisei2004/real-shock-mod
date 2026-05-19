@@ -210,7 +210,7 @@ The ESP32 can switch shock patterns based on the `command` value.
 
 ## LED Test Device Addendum
 
-The current implementation targets an LED test device, not hardware that actually applies electric stimulation. The original concept, screenshots, and images remain in this README, while the implemented ESP32 path sends one USB-serial line: `event <kind> <level> <duration_ms> <id>`.
+The current implementation targets an LED test device, not hardware that actually applies electric stimulation. The original concept, screenshots, and images remain in this README, while the implemented ESP32 path auto-discovers the BLE device named `RealShockLED` and sends `event <kind> <level> <duration_ms> <id>`. USB serial is still available as a debug fallback.
 
 Button mapping is `A=GPIO23` for intensity up, `B=GPIO22` for mode change, and `C=GPIO19` for intensity down. On startup, the ESP32 presses A once to reach level 0 and B twice to enter mode 3. If level 0 has been idle for 13+ seconds, the firmware presses C once before the next output, treats the device as `-1`, then presses A until the requested level is reached.
 
@@ -219,6 +219,13 @@ Added firmware and debug tool:
 ```text
 esp32/real_shock_led_controller/real_shock_led_controller.ino
 tools/esp32_debug.py
+```
+
+Default BLE settings:
+
+```text
+REAL_SHOCK_ESP32_TRANSPORT=ble
+REAL_SHOCK_ESP32_BLE_NAME=RealShockLED
 ```
 
 Output rules:

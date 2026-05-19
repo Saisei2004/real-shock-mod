@@ -69,20 +69,20 @@ Check bridge status only:
 .\scripts\Install-Re9Bridge.ps1
 ```
 
-## 5. Set The ESP32 USB Serial Port
+## 5. Configure ESP32 BLE
 
-This revision sends one-line commands to the ESP32 over USB serial for the LED test device. On the current macOS test setup, the default is `/dev/cu.usbserial-120`.
+This revision auto-discovers the ESP32 over BLE for the LED test device. The ESP32 advertises as `RealShockLED`, and the PC connects to it when the system starts.
 
 ```powershell
-$env:REAL_SHOCK_ESP32_SERIAL_PORT = "COM3"
-$env:REAL_SHOCK_ESP32_SERIAL_BAUD = "115200"
+$env:REAL_SHOCK_ESP32_TRANSPORT = "ble"
+$env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockLED"
 ```
 
 macOS / zsh:
 
 ```bash
-export REAL_SHOCK_ESP32_SERIAL_PORT=/dev/cu.usbserial-120
-export REAL_SHOCK_ESP32_SERIAL_BAUD=115200
+export REAL_SHOCK_ESP32_TRANSPORT=ble
+export REAL_SHOCK_ESP32_BLE_NAME=RealShockLED
 ```
 
 Main environment variables:
@@ -91,8 +91,9 @@ Main environment variables:
 $env:REAL_SHOCK_PORT = "8765"
 $env:REAL_SHOCK_H6_ADDRESS = ""
 $env:REAL_SHOCK_H6_NAME_PREFIX = "H6"
-$env:REAL_SHOCK_ESP32_SERIAL_PORT = "COM3"
-$env:REAL_SHOCK_ESP32_SERIAL_BAUD = "115200"
+$env:REAL_SHOCK_ESP32_TRANSPORT = "ble"
+$env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockLED"
+$env:REAL_SHOCK_ESP32_BLE_SCAN_SECONDS = "6.0"
 $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
 ```
 
@@ -101,11 +102,12 @@ $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
 | `REAL_SHOCK_PORT` | Local server port |
 | `REAL_SHOCK_H6_ADDRESS` | BLE address. Leave empty for auto-detect |
 | `REAL_SHOCK_H6_NAME_PREFIX` | Heart-rate sensor name prefix |
-| `REAL_SHOCK_ESP32_SERIAL_PORT` | ESP32 USB serial port |
-| `REAL_SHOCK_ESP32_SERIAL_BAUD` | ESP32 baud rate. Default: 115200 |
+| `REAL_SHOCK_ESP32_TRANSPORT` | `ble` / `serial` / `http`. Default: `ble` |
+| `REAL_SHOCK_ESP32_BLE_NAME` | BLE name used for ESP32 auto-discovery |
+| `REAL_SHOCK_ESP32_BLE_SCAN_SECONDS` | ESP32 scan time |
 | `REAL_SHOCK_ESP32_TIMEOUT` | ESP32 send timeout in seconds |
 
-HTTP mode is still available for compatibility. It is used only when `REAL_SHOCK_ESP32_SERIAL_PORT` is empty and `REAL_SHOCK_ESP32_URL` is set.
+USB serial is still available as a debug fallback. Use `REAL_SHOCK_ESP32_TRANSPORT=serial` plus `REAL_SHOCK_ESP32_SERIAL_PORT`. HTTP mode is used only when `REAL_SHOCK_ESP32_TRANSPORT=http` and `REAL_SHOCK_ESP32_URL` are set.
 
 ## 6. Launch
 

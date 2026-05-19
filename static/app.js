@@ -283,7 +283,8 @@ function updateGame(game, commands, esp32) {
     const last = esp32.last_sent?.kind ? ` / ${esp32.last_sent.kind}` : "";
     const transport = esp32.transport ? `${esp32.transport}:` : "";
     const serial = esp32.serial_port ? ` ${esp32.serial_port}` : "";
-    fields.esp32Status.textContent = `${transport}${esp32.status || "waiting"}${last}${serial}`;
+    const ble = esp32.ble_name || esp32.ble_address ? ` ${esp32.ble_name || esp32.ble_address}` : "";
+    fields.esp32Status.textContent = `${transport}${esp32.status || "waiting"}${last}${serial}${ble}`;
   } else {
     fields.esp32Status.textContent = "disabled";
   }

@@ -1,10 +1,49 @@
 #!/usr/bin/env python3
 import argparse
+import asyncio
 import os
 import select
 import sys
 import termios
 import time
+
+
+BLE_DEVICE_NAME = os.environ.get("REAL_SHOCK_ESP32_BLE_NAME", "RealShockLED")
+BLE_ADDRESS = os.environ.get("REAL_SHOCK_ESP32_BLE_ADDRESS", "").upper()
+BLE_SERVICE_UUID = os.environ.get("REAL_SHOCK_ESP32_BLE_SERVICE_UUID", "6d8f0001-7f4f-4f1d-9b55-1f4a6c3f3a10").lower()
+BLE_COMMAND_UUID = os.environ.get("REAL_SHOCK_ESP32_BLE_COMMAND_UUID", "6d8f0002-7f4f-4f1d-9b55-1f4a6c3f3a10").lower()
+
+
+async def send_line_ble(line, scan_seconds):
+    try:
+        from bleak import BleakClient, BleakScanner
+    except ImportError:
+        print("bleak is not installed. Run: python -m pip install -r requirements.txt", file=sys.stderr)
+        return 2
+
+    print(f"Scanning BLE device: {BLE_DEVICE_NAME}", flush=True)
+    devices = await BleakScanner.discover(timeout=scan_seconds, return_adv=True)
+    device = None
+    for key, pair in devices.items():
+        found_device, adv = pair
+        address = (getattr(found_device, "address", "") or key or "").upper()
+        name = getattr(found_device, "name", None) or getattr(adv, "local_name", None) or ""
+        service_uuids = [uuid.lower() for uuid in (getattr(adv, "service_uuids", None) or [])]
+        if BLE_ADDRESS and address.replace(":", "") == BLE_ADDRESS.replace(":", ""):
+            device = found_device
+            break
+        if name == BLE_DEVICE_NAME or BLE_SERVICE_UUID in service_uuids:
+            device = found_device
+            break
+
+    if device is None:
+        print("BLE device not found", file=sys.stderr)
+        return 1
+
+    async with BleakClient(device, timeout=max(8.0, scan_seconds)) as client:
+        await client.write_gatt_char(BLE_COMMAND_UUID, (line.strip() + "\n").encode("ascii"), response=True)
+    print(f"sent over BLE: {line.strip()}")
+    return 0
 
 
 def configure_posix_serial(fd, baud):
@@ -77,8 +116,10 @@ def send_line(port, baud, line, wait_seconds):
 def main():
     parser = argparse.ArgumentParser(description="ESP32 LED test controller debug tool")
     parser.add_argument("command", nargs="*", help="status | none | level N | button A | event kind intensity duration_ms")
+    parser.add_argument("--transport", choices=("ble", "serial"), default=os.environ.get("REAL_SHOCK_ESP32_TRANSPORT", "ble"))
     parser.add_argument("--port", default=os.environ.get("REAL_SHOCK_ESP32_SERIAL_PORT", "/dev/cu.usbserial-120"))
     parser.add_argument("--baud", type=int, default=int(os.environ.get("REAL_SHOCK_ESP32_SERIAL_BAUD", "115200")))
+    parser.add_argument("--scan", type=float, default=float(os.environ.get("REAL_SHOCK_ESP32_BLE_SCAN_SECONDS", "6.0")))
     parser.add_argument("--wait", type=float, default=2.5)
     args = parser.parse_args()
 
@@ -94,6 +135,8 @@ def main():
         if args.command[0] == "event" and len(args.command) >= 4:
             args.wait = max(args.wait, int(args.command[3]) / 1000 + 2.5)
 
+    if args.transport == "ble":
+        return asyncio.run(send_line_ble(line, args.scan))
     return send_line(args.port, args.baud, line, args.wait)
 
 

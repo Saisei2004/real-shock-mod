@@ -69,22 +69,22 @@ Lua Bridgeだけ入れたい場合:
 .\scripts\Install-Re9Bridge.ps1
 ```
 
-## 5. ESP32のUSBシリアルを設定する
+## 5. ESP32 BLEを設定する
 
-この版はLEDテストデバイス用のESP32へ、USBシリアルで1行コマンドを送ります。Macで今回のテスト構成なら既定値は `/dev/cu.usbserial-120` です。
+この版はLEDテストデバイス用のESP32をBLEで自動探索します。ESP32は `RealShockLED` という名前で待ち受け、システム起動時にPC側が探して接続します。
 
 PowerShell:
 
 ```powershell
-$env:REAL_SHOCK_ESP32_SERIAL_PORT = "COM3"
-$env:REAL_SHOCK_ESP32_SERIAL_BAUD = "115200"
+$env:REAL_SHOCK_ESP32_TRANSPORT = "ble"
+$env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockLED"
 ```
 
 macOS / zsh:
 
 ```bash
-export REAL_SHOCK_ESP32_SERIAL_PORT=/dev/cu.usbserial-120
-export REAL_SHOCK_ESP32_SERIAL_BAUD=115200
+export REAL_SHOCK_ESP32_TRANSPORT=ble
+export REAL_SHOCK_ESP32_BLE_NAME=RealShockLED
 ```
 
 設定できる主な環境変数:
@@ -93,8 +93,9 @@ export REAL_SHOCK_ESP32_SERIAL_BAUD=115200
 $env:REAL_SHOCK_PORT = "8765"
 $env:REAL_SHOCK_H6_ADDRESS = ""
 $env:REAL_SHOCK_H6_NAME_PREFIX = "H6"
-$env:REAL_SHOCK_ESP32_SERIAL_PORT = "COM3"
-$env:REAL_SHOCK_ESP32_SERIAL_BAUD = "115200"
+$env:REAL_SHOCK_ESP32_TRANSPORT = "ble"
+$env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockLED"
+$env:REAL_SHOCK_ESP32_BLE_SCAN_SECONDS = "6.0"
 $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
 ```
 
@@ -103,11 +104,12 @@ $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
 | `REAL_SHOCK_PORT` | ローカルサーバーのポート |
 | `REAL_SHOCK_H6_ADDRESS` | BLEアドレス指定。空なら自動検出 |
 | `REAL_SHOCK_H6_NAME_PREFIX` | 心拍センサ名の先頭 |
-| `REAL_SHOCK_ESP32_SERIAL_PORT` | ESP32のUSBシリアルポート |
-| `REAL_SHOCK_ESP32_SERIAL_BAUD` | ESP32のボーレート。既定は115200 |
+| `REAL_SHOCK_ESP32_TRANSPORT` | `ble` / `serial` / `http`。既定は `ble` |
+| `REAL_SHOCK_ESP32_BLE_NAME` | 自動探索するESP32のBLE名 |
+| `REAL_SHOCK_ESP32_BLE_SCAN_SECONDS` | ESP32探索時間 |
 | `REAL_SHOCK_ESP32_TIMEOUT` | ESP32送信タイムアウト秒 |
 
-HTTP送信も互換用に残しています。`REAL_SHOCK_ESP32_SERIAL_PORT` が空で `REAL_SHOCK_ESP32_URL` が設定されている場合だけ HTTP JSON を使います。
+USBシリアル送信もデバッグ用に残しています。使う場合は `REAL_SHOCK_ESP32_TRANSPORT=serial` と `REAL_SHOCK_ESP32_SERIAL_PORT` を指定します。HTTP送信は `REAL_SHOCK_ESP32_TRANSPORT=http` と `REAL_SHOCK_ESP32_URL` を指定した場合だけ使います。
 
 ## 6. 起動する
 

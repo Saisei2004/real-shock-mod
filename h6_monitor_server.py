@@ -32,6 +32,12 @@ DEFAULT_PORT = int(os.environ.get("REAL_SHOCK_PORT", "8765"))
 ESP32_COMMAND_URL = os.environ.get("REAL_SHOCK_ESP32_URL", "").strip()
 ESP32_SERIAL_PORT = os.environ.get("REAL_SHOCK_ESP32_SERIAL_PORT", "").strip()
 ESP32_SERIAL_BAUD = int(os.environ.get("REAL_SHOCK_ESP32_SERIAL_BAUD", "115200"))
+ESP32_TRANSPORT = os.environ.get("REAL_SHOCK_ESP32_TRANSPORT", "ble").strip().lower()
+ESP32_BLE_NAME = os.environ.get("REAL_SHOCK_ESP32_BLE_NAME", "RealShockLED").strip()
+ESP32_BLE_ADDRESS = os.environ.get("REAL_SHOCK_ESP32_BLE_ADDRESS", "").strip().upper()
+ESP32_BLE_SERVICE_UUID = os.environ.get("REAL_SHOCK_ESP32_BLE_SERVICE_UUID", "6d8f0001-7f4f-4f1d-9b55-1f4a6c3f3a10").strip().lower()
+ESP32_BLE_COMMAND_UUID = os.environ.get("REAL_SHOCK_ESP32_BLE_COMMAND_UUID", "6d8f0002-7f4f-4f1d-9b55-1f4a6c3f3a10").strip().lower()
+ESP32_BLE_SCAN_SECONDS = float(os.environ.get("REAL_SHOCK_ESP32_BLE_SCAN_SECONDS", "6.0"))
 ESP32_TIMEOUT_SECONDS = float(os.environ.get("REAL_SHOCK_ESP32_TIMEOUT", "2.0"))
 
 RE9_APPID = "3764200"
@@ -323,10 +329,7 @@ def _hp_percent(hp, max_hp, bridge):
 
 
 def default_serial_port():
-    if ESP32_SERIAL_PORT:
-        return ESP32_SERIAL_PORT
-    candidate = Path("/dev/cu.usbserial-120")
-    return str(candidate) if candidate.exists() else ""
+    return ESP32_SERIAL_PORT
 
 
 def damage_output_for_hp(hp_percent):
@@ -508,21 +511,49 @@ class CommandBus:
 
 
 class ESP32CommandSender:
-    def __init__(self, command_bus, url, serial_port=None, serial_baud=115200):
+    def __init__(
+        self,
+        command_bus,
+        url,
+        serial_port=None,
+        serial_baud=115200,
+        transport=None,
+        ble_name=None,
+        ble_address=None,
+        ble_service_uuid=None,
+        ble_command_uuid=None,
+    ):
         self.command_bus = command_bus
         self.url = url
         self.serial_port = serial_port or default_serial_port()
         self.serial_baud = serial_baud
+        self.transport = (transport or ESP32_TRANSPORT or "ble").lower()
+        if self.transport == "auto":
+            if self.serial_port:
+                self.transport = "serial"
+            elif self.url:
+                self.transport = "http"
+            else:
+                self.transport = "ble"
+        self.ble_name = ble_name or ESP32_BLE_NAME
+        self.ble_address = (ble_address or ESP32_BLE_ADDRESS).upper()
+        self.ble_service_uuid = (ble_service_uuid or ESP32_BLE_SERVICE_UUID).lower()
+        self.ble_command_uuid = (ble_command_uuid or ESP32_BLE_COMMAND_UUID).lower()
+        self.ble_client = None
         self.serial = None
         self.serial_fd = None
         self.last_sent_id = 0
+        enabled = self.transport in {"ble", "serial", "http"}
         self.latest = {
-            "enabled": bool(url or self.serial_port),
-            "transport": "serial" if self.serial_port else ("http" if url else None),
+            "enabled": enabled,
+            "transport": self.transport if enabled else None,
             "url": url or None,
-            "serial_port": self.serial_port or None,
-            "serial_baud": self.serial_baud if self.serial_port else None,
-            "status": "disabled" if not (url or self.serial_port) else "waiting",
+            "serial_port": (self.serial_port or None) if self.transport == "serial" else None,
+            "serial_baud": self.serial_baud if self.transport == "serial" else None,
+            "ble_name": self.ble_name if self.transport == "ble" else None,
+            "ble_address": (self.ble_address or None) if self.transport == "ble" else None,
+            "ble_service_uuid": self.ble_service_uuid if self.transport == "ble" else None,
+            "status": "waiting" if enabled else "disabled",
             "last_sent": None,
             "last_error": None,
         }
@@ -531,11 +562,23 @@ class ESP32CommandSender:
         return dict(self.latest)
 
     async def run(self):
-        if not self.url and not self.serial_port:
+        if self.transport not in {"ble", "serial", "http"}:
             return
         timeout = ClientTimeout(total=ESP32_TIMEOUT_SECONDS)
         async with ClientSession(timeout=timeout) as session:
             while True:
+                if self.transport == "ble" and (not self.ble_client or not self.ble_client.is_connected):
+                    try:
+                        await self._connect_ble()
+                    except Exception as exc:
+                        self.latest.update({
+                            "enabled": True,
+                            "transport": "ble",
+                            "status": "error",
+                            "last_error": str(exc),
+                        })
+                        await asyncio.sleep(2.0)
+                        continue
                 pending = [
                     event for event in reversed(list(self.command_bus.events))
                     if event.get("id", 0) > self.last_sent_id
@@ -557,13 +600,18 @@ class ESP32CommandSender:
             "output": output,
         }
         try:
-            if self.serial_port:
+            line = self._line_for_event(event, output)
+            if self.transport == "ble":
+                await self._send_ble(line)
+            elif self.transport == "serial":
                 await asyncio.to_thread(self._send_serial, event, output)
-            elif self.url:
+            elif self.transport == "http" and self.url:
                 async with session.post(self.url, json=payload) as response:
                     text = await response.text()
                     if response.status >= 400:
                         raise RuntimeError(f"HTTP {response.status}: {text[:160]}")
+            else:
+                raise RuntimeError(f"ESP32 transport {self.transport!r} is not configured")
             self.last_sent_id = event.get("id", self.last_sent_id)
             self.latest.update({
                 "enabled": True,
@@ -584,6 +632,72 @@ class ESP32CommandSender:
                 "last_error": str(exc),
             })
 
+    def _line_for_event(self, event, output):
+        kind = output.get("kind") or event.get("kind") or "none"
+        intensity = int(output.get("intensity") or 0)
+        duration_ms = int(output.get("duration_ms") or 0)
+        event_id = int(event.get("id") or 0)
+        return f"event {kind} {intensity} {duration_ms} {event_id}\n"
+
+    async def _send_ble(self, line):
+        if not self.ble_client or not self.ble_client.is_connected:
+            await self._connect_ble()
+        try:
+            await self.ble_client.write_gatt_char(self.ble_command_uuid, line.encode("ascii"), response=True)
+        except Exception:
+            await self._disconnect_ble()
+            await self._connect_ble()
+            await self.ble_client.write_gatt_char(self.ble_command_uuid, line.encode("ascii"), response=True)
+
+    async def _connect_ble(self):
+        self.latest.update({
+            "enabled": True,
+            "transport": "ble",
+            "status": "scanning",
+            "last_error": None,
+        })
+        device = None
+        devices = await BleakScanner.discover(timeout=ESP32_BLE_SCAN_SECONDS, return_adv=True)
+        for key, pair in devices.items():
+            found_device, adv = pair
+            address = (getattr(found_device, "address", "") or key or "").upper()
+            name = getattr(found_device, "name", None) or getattr(adv, "local_name", None) or ""
+            service_uuids = [uuid.lower() for uuid in (getattr(adv, "service_uuids", None) or [])]
+            if self.ble_address and address.replace(":", "") == self.ble_address.replace(":", ""):
+                device = found_device
+                break
+            if self.ble_name and name == self.ble_name:
+                device = found_device
+                break
+            if self.ble_service_uuid in service_uuids:
+                device = found_device
+                break
+
+        if device is None:
+            raise RuntimeError(f"BLE device not found: {self.ble_name or self.ble_service_uuid}")
+
+        self.latest.update({
+            "status": "connecting",
+            "ble_address": getattr(device, "address", None),
+            "ble_name": getattr(device, "name", None) or self.ble_name,
+        })
+        self.ble_client = BleakClient(device, timeout=ESP32_TIMEOUT_SECONDS * 4)
+        await self.ble_client.connect()
+        self.latest.update({
+            "status": "connected",
+            "ble_address": getattr(device, "address", None),
+            "ble_name": getattr(device, "name", None) or self.ble_name,
+            "last_error": None,
+        })
+
+    async def _disconnect_ble(self):
+        if self.ble_client:
+            try:
+                await self.ble_client.disconnect()
+            except Exception:
+                pass
+        self.ble_client = None
+
     def _send_serial(self, event, output):
         if self.serial is None and self.serial_fd is None:
             try:
@@ -603,11 +717,7 @@ class ESP32CommandSender:
             if self.serial is not None:
                 self.serial.reset_input_buffer()
 
-        kind = output.get("kind") or event.get("kind") or "none"
-        intensity = int(output.get("intensity") or 0)
-        duration_ms = int(output.get("duration_ms") or 0)
-        event_id = int(event.get("id") or 0)
-        line = f"event {kind} {intensity} {duration_ms} {event_id}\n"
+        line = self._line_for_event(event, output)
         if self.serial is not None:
             self.serial.write(line.encode("ascii"))
             self.serial.flush()
@@ -1555,7 +1665,17 @@ class H6Monitor:
 
 
 command_bus = CommandBus(RE9_COMMAND_LOG)
-command_sender = ESP32CommandSender(command_bus, ESP32_COMMAND_URL, ESP32_SERIAL_PORT, ESP32_SERIAL_BAUD)
+command_sender = ESP32CommandSender(
+    command_bus,
+    ESP32_COMMAND_URL,
+    ESP32_SERIAL_PORT,
+    ESP32_SERIAL_BAUD,
+    ESP32_TRANSPORT,
+    ESP32_BLE_NAME,
+    ESP32_BLE_ADDRESS,
+    ESP32_BLE_SERVICE_UUID,
+    ESP32_BLE_COMMAND_UUID,
+)
 game_monitor = GameMonitor(command_bus)
 monitor = H6Monitor(command_bus=command_bus, game_monitor=game_monitor, command_sender=command_sender)
 game_monitor.on_change = monitor.broadcast
