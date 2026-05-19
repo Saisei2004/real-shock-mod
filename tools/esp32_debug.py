@@ -8,7 +8,7 @@ import termios
 import time
 
 
-BLE_DEVICE_NAME = os.environ.get("REAL_SHOCK_ESP32_BLE_NAME", "RealShockLED")
+BLE_DEVICE_NAME = os.environ.get("REAL_SHOCK_ESP32_BLE_NAME", "RealShockESP32")
 BLE_ADDRESS = os.environ.get("REAL_SHOCK_ESP32_BLE_ADDRESS", "").upper()
 BLE_SERVICE_UUID = os.environ.get("REAL_SHOCK_ESP32_BLE_SERVICE_UUID", "6d8f0001-7f4f-4f1d-9b55-1f4a6c3f3a10").lower()
 BLE_COMMAND_UUID = os.environ.get("REAL_SHOCK_ESP32_BLE_COMMAND_UUID", "6d8f0002-7f4f-4f1d-9b55-1f4a6c3f3a10").lower()
@@ -114,7 +114,7 @@ def send_line(port, baud, line, wait_seconds):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ESP32 LED test controller debug tool")
+    parser = argparse.ArgumentParser(description="ESP32 button controller debug tool")
     parser.add_argument("command", nargs="*", help="status | none | level N | button A | event kind intensity duration_ms")
     parser.add_argument("--transport", choices=("ble", "serial"), default=os.environ.get("REAL_SHOCK_ESP32_TRANSPORT", "ble"))
     parser.add_argument("--port", default=os.environ.get("REAL_SHOCK_ESP32_SERIAL_PORT", "/dev/cu.usbserial-120"))

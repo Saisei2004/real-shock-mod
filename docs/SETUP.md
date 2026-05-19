@@ -71,20 +71,20 @@ Lua Bridgeだけ入れたい場合:
 
 ## 5. ESP32 BLEを設定する
 
-この版はLEDテストデバイス用のESP32をBLEで自動探索します。ESP32は `RealShockLED` という名前で待ち受け、システム起動時にPC側が探して接続します。
+この版はESP32をBLEで自動探索します。ESP32は `RealShockESP32` という名前で待ち受け、システム起動時にPC側が探して接続します。
 
 PowerShell:
 
 ```powershell
 $env:REAL_SHOCK_ESP32_TRANSPORT = "ble"
-$env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockLED"
+$env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockESP32"
 ```
 
 macOS / zsh:
 
 ```bash
 export REAL_SHOCK_ESP32_TRANSPORT=ble
-export REAL_SHOCK_ESP32_BLE_NAME=RealShockLED
+export REAL_SHOCK_ESP32_BLE_NAME=RealShockESP32
 ```
 
 設定できる主な環境変数:
@@ -94,7 +94,7 @@ $env:REAL_SHOCK_PORT = "8765"
 $env:REAL_SHOCK_H6_ADDRESS = ""
 $env:REAL_SHOCK_H6_NAME_PREFIX = "H6"
 $env:REAL_SHOCK_ESP32_TRANSPORT = "ble"
-$env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockLED"
+$env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockESP32"
 $env:REAL_SHOCK_ESP32_BLE_SCAN_SECONDS = "6.0"
 $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
 ```

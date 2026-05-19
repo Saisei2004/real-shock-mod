@@ -71,18 +71,18 @@ Check bridge status only:
 
 ## 5. Configure ESP32 BLE
 
-This revision auto-discovers the ESP32 over BLE for the LED test device. The ESP32 advertises as `RealShockLED`, and the PC connects to it when the system starts.
+This revision auto-discovers the ESP32 over BLE. The ESP32 advertises as `RealShockESP32`, and the PC connects to it when the system starts.
 
 ```powershell
 $env:REAL_SHOCK_ESP32_TRANSPORT = "ble"
-$env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockLED"
+$env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockESP32"
 ```
 
 macOS / zsh:
 
 ```bash
 export REAL_SHOCK_ESP32_TRANSPORT=ble
-export REAL_SHOCK_ESP32_BLE_NAME=RealShockLED
+export REAL_SHOCK_ESP32_BLE_NAME=RealShockESP32
 ```
 
 Main environment variables:
@@ -92,7 +92,7 @@ $env:REAL_SHOCK_PORT = "8765"
 $env:REAL_SHOCK_H6_ADDRESS = ""
 $env:REAL_SHOCK_H6_NAME_PREFIX = "H6"
 $env:REAL_SHOCK_ESP32_TRANSPORT = "ble"
-$env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockLED"
+$env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockESP32"
 $env:REAL_SHOCK_ESP32_BLE_SCAN_SECONDS = "6.0"
 $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
 ```

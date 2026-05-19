@@ -8,7 +8,7 @@ struct Button {
   int pin;
 };
 
-const char *BLE_DEVICE_NAME = "RealShockLED";
+const char *BLE_DEVICE_NAME = "RealShockESP32";
 const char *BLE_SERVICE_UUID = "6d8f0001-7f4f-4f1d-9b55-1f4a6c3f3a10";
 const char *BLE_COMMAND_UUID = "6d8f0002-7f4f-4f1d-9b55-1f4a6c3f3a10";
 
@@ -18,7 +18,6 @@ const Button BUTTONS[] = {
   {'C', 19}, // intensity down
 };
 
-const int LED_PIN = 2;
 const int BUTTON_PRESS_MS = 26;
 const int BUTTON_RELEASE_MS = 1;
 const int LEVEL_MIN = 0;
@@ -153,7 +152,6 @@ void finishOutput() {
     return;
   }
   outputActive = false;
-  digitalWrite(LED_PIN, LOW);
   setLevel(0);
   Serial.print("OK event id=");
   Serial.println(activeEventId);
@@ -166,7 +164,6 @@ void runEvent(const char *kind, int intensity, int durationMs, int eventId) {
 
   if (intensity <= 0 || durationMs <= 0 || strcmp(kind, "none") == 0) {
     outputActive = false;
-    digitalWrite(LED_PIN, LOW);
     setLevel(0);
     Serial.print("OK none id=");
     Serial.println(eventId);
@@ -183,7 +180,6 @@ void runEvent(const char *kind, int intensity, int durationMs, int eventId) {
   Serial.println(eventId);
 
   setLevel(intensity);
-  digitalWrite(LED_PIN, HIGH);
   strncpy(activeKind, kind, sizeof(activeKind) - 1);
   activeKind[sizeof(activeKind) - 1] = '\0';
   activeEventId = eventId;
@@ -270,9 +266,6 @@ void setup() {
     pinMode(BUTTONS[i].pin, OUTPUT);
     digitalWrite(BUTTONS[i].pin, LOW);
   }
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, LOW);
-
   delay(600);
   powerOnToZeroAndMode3();
 
@@ -295,7 +288,7 @@ void setup() {
   advertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();
 
-  Serial.println("READY RealShockLED BLE A=23 B=22 C=19 mode=3 level=0");
+  Serial.println("READY RealShockESP32 BLE A=23 B=22 C=19 mode=3 level=0");
 }
 
 void loop() {
