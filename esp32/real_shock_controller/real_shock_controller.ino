@@ -18,7 +18,7 @@ const Button BUTTONS[] = {
   {'C', 25}, // intensity down
 };
 
-const int BUTTON_PRESS_MS = 26;
+const int BUTTON_PRESS_MS = 27;
 const int BUTTON_RELEASE_MS = 1;
 const int LEVEL_MIN = 0;
 const int LEVEL_MAX = 15;
