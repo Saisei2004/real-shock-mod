@@ -212,7 +212,7 @@ The ESP32 can switch shock patterns based on the `command` value.
 
 The current implementation has the ESP32 operate the external device's A/B/C buttons. The original concept, screenshots, and images remain in this README, while the implemented ESP32 path auto-discovers the BLE device named `RealShockESP32` and sends `event <kind> <level> <duration_ms> <id>`. USB serial is still available as a debug fallback.
 
-Button mapping is `A=GPIO32` for intensity up, `B=GPIO33` for mode change, and `C=GPIO25` for intensity down. ESP32 `GPIO34` is input-only, so it is not used for button output. On startup, the ESP32 presses A once to reach level 0 and B twice to enter mode 3. If level 0 has been idle for 13+ seconds, the firmware presses C once before the next output, treats the device as `-1`, then presses A until the requested level is reached.
+Button mapping is `A=GPIO25` for intensity up, `B=GPIO33` for mode change, and `C=GPIO32` for intensity down. ESP32 `GPIO34` is input-only, so it is not used for button output. On startup, the ESP32 presses A once to reach level 0 and B twice to enter mode 3. If level 0 has been idle for 13+ seconds, the firmware presses C once before the next output, treats the device as `-1`, then presses A until the requested level is reached.
 
 Added firmware and debug tool:
 
