@@ -19,6 +19,7 @@ const Button BUTTONS[] = {
 };
 
 const int BUTTON_PRESS_MS = 27;
+const int BUTTON_C_PRESS_MS = 30;
 const int BUTTON_RELEASE_MS = 1;
 const int LEVEL_MIN = 0;
 const int LEVEL_MAX = 15;
@@ -83,8 +84,9 @@ void pressButton(char name) {
     Serial.println(name);
     return;
   }
+  int pressMs = (name == 'C') ? BUTTON_C_PRESS_MS : BUTTON_PRESS_MS;
   digitalWrite(pin, HIGH);
-  delay(BUTTON_PRESS_MS);
+  delay(pressMs);
   digitalWrite(pin, LOW);
   delay(BUTTON_RELEASE_MS);
 }
