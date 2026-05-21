@@ -89,6 +89,24 @@ void pressButton(char name) {
   delay(BUTTON_RELEASE_MS);
 }
 
+void holdButton(char name, int holdMs) {
+  int pin = pinForButton(name);
+  if (pin < 0) {
+    Serial.print("ERR unknown button ");
+    Serial.println(name);
+    return;
+  }
+  if (holdMs < 1) {
+    holdMs = 1;
+  }
+  if (holdMs > 10000) {
+    holdMs = 10000;
+  }
+  digitalWrite(pin, HIGH);
+  delay(holdMs);
+  digitalWrite(pin, LOW);
+}
+
 void noteZeroIfNeeded() {
   if (currentLevel == 0) {
     zeroSinceMs = millis();
@@ -239,6 +257,23 @@ void handleCommand(char *line) {
     }
     return;
   }
+  if (strcmp(verb, "hold") == 0) {
+    char buttonName = '\0';
+    int holdMs = 0;
+    if (sscanf(line, "%15s %c %d", verb, &buttonName, &holdMs) == 3) {
+      if (buttonName >= 'a' && buttonName <= 'z') {
+        buttonName = buttonName - 'a' + 'A';
+      }
+      holdButton(buttonName, holdMs);
+      Serial.print("OK hold ");
+      Serial.print(buttonName);
+      Serial.print(" ");
+      Serial.println(holdMs);
+    } else {
+      Serial.println("ERR use: hold A|B|C ms");
+    }
+    return;
+  }
   if (strcmp(verb, "level") == 0) {
     if (sscanf(line, "%15s %d", verb, &intensity) == 2) {
       setLevel(intensity);
@@ -257,7 +292,7 @@ void handleCommand(char *line) {
     return;
   }
 
-  Serial.println("ERR commands: event/status/none/level/button/mode3/resetstate");
+  Serial.println("ERR commands: event/status/none/level/button/hold/mode3/resetstate");
 }
 
 void setup() {
