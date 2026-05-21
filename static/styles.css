@@ -708,7 +708,7 @@ canvas {
 .control-panel {
   grid-area: control;
   display: grid;
-  grid-template-rows: 26px 36px 8px 18px 18px 34px 42px 30px 0;
+  grid-template-rows: 26px 36px 8px 18px 18px 34px 28px 42px 30px 0;
   gap: 7px;
 }
 
@@ -780,6 +780,26 @@ canvas {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 6px;
+}
+
+.debug-mode {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid rgba(122, 169, 214, 0.24);
+  background: rgba(5, 8, 7, 0.58);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.debug-mode input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--blue);
 }
 
 .debug-actions button:nth-child(1),

@@ -212,7 +212,11 @@ The ESP32 can switch shock patterns based on the `command` value.
 
 The current implementation has the ESP32 operate the external device's A/B/C buttons. The original concept, screenshots, and images remain in this README, while the implemented ESP32 path auto-discovers the BLE device named `RealShockESP32` and sends `event <kind> <level> <duration_ms> <id>`. USB serial is still available as a debug fallback.
 
-Button mapping is `A=GPIO25` for intensity up, `B=GPIO33` for mode change, and `C=GPIO32` for intensity down. ESP32 `GPIO34` is input-only, so it is not used for button output. On startup, the ESP32 presses A once to reach level 0 and B twice to enter mode 3. If level 0 has been idle for 13+ seconds, the firmware presses C once before the next output, treats the device as `-1`, then presses A until the requested level is reached.
+Button mapping is `A=GPIO25` for intensity up, `B=GPIO33` for mode change, and `C=GPIO32` for intensity down. ESP32 `GPIO34` is input-only, so it is not used for button output. On startup, the ESP32 presses C three times to drain any stale level, then presses A once to reach level 0 and B twice to enter mode 3. If level 0 has been idle for 13+ seconds, the firmware presses C once before the next output, treats the device as `-1`, then presses A until the requested level is reached. Repeated C presses inside the ESP32 use a 30ms gap.
+
+The PC sends a single `event <kind> <level> <duration_ms> <id>` line. The ESP32 performs the A/C button sequence and returns to level 0 after the event duration. BLE/Serial sends periodic `status` keepalives while idle so the next damage event is less likely to wait on reconnection.
+
+When `Debug max Lv3` is enabled in the UI, both live detection and manual debug commands are capped at level 3 before they are sent to the ESP32. Transient HP 0 samples around character switching are ignored briefly so they do not produce false `damage` or `death` commands.
 
 Added firmware and debug tool:
 
@@ -237,6 +241,14 @@ Output rules:
 | `faltering` | Starts at Lv3 and rises to Lv10 by Danger duration; its timer continues behind higher-priority events |
 | `startle` | Random Lv5-15 for 1-4s |
 | `death` | Lv15 for 10s |
+
+ESP32 debug commands:
+
+| Command | Meaning |
+| --- | --- |
+| `button A` / `button B` / `button C` | Press one button once |
+| `hold C 5000` | Hold a button for wiring checks |
+| `cycle 4 30` | Raise to level 4, wait 1s, then return to 0 with 30ms C gaps |
 
 ## API
 

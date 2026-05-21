@@ -50,6 +50,7 @@ const fields = {
   debugStartle: $("debugStartle"),
   debugFaltering: $("debugFaltering"),
   debugNone: $("debugNone"),
+  debugMode: $("debugMode"),
 };
 
 const hrCanvas = $("hrChart");
@@ -167,10 +168,19 @@ function update(data) {
   updateMainBio(measurement, hrv);
   updateDetection(data.detection);
   updateRecording(data.recording);
+  updateSettings(data.settings);
   updateGame(data.game, data.commands, data.esp32);
 
   drawChart(hrCanvas, data.history?.hr || [], { color: "#86f0a8", unit: " bpm" });
   drawChart(rrCanvas, data.history?.rr || [], { color: "#7aa9d6", unit: " ms" });
+}
+
+function updateSettings(settings) {
+  if (!fields.debugMode) return;
+  const enabled = Boolean(settings?.debug_mode);
+  if (fields.debugMode.checked !== enabled) {
+    fields.debugMode.checked = enabled;
+  }
 }
 
 function updateMainBio(measurement, hrv) {
@@ -318,6 +328,17 @@ async function sendDebugCommand(kind) {
   });
   if (!response.ok) {
     fields.commandLog.textContent = `debug failed: ${await response.text()}`;
+  }
+}
+
+async function setDebugMode(enabled) {
+  const response = await fetch("/api/settings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ debug_mode: enabled }),
+  });
+  if (!response.ok) {
+    fields.commandLog.textContent = `settings failed: ${await response.text()}`;
   }
 }
 
@@ -500,6 +521,12 @@ fields.debugFaltering.addEventListener("click", () => {
 fields.debugNone.addEventListener("click", () => {
   sendDebugCommand("none").catch((error) => {
     fields.commandLog.textContent = `debug failed: ${error}`;
+  });
+});
+
+fields.debugMode.addEventListener("change", () => {
+  setDebugMode(fields.debugMode.checked).catch((error) => {
+    fields.commandLog.textContent = `settings failed: ${error}`;
   });
 });
 

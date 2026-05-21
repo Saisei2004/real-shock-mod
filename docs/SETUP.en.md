@@ -95,6 +95,7 @@ $env:REAL_SHOCK_ESP32_TRANSPORT = "ble"
 $env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockESP32"
 $env:REAL_SHOCK_ESP32_BLE_SCAN_SECONDS = "6.0"
 $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
+$env:REAL_SHOCK_ESP32_KEEPALIVE_SECONDS = "5.0"
 ```
 
 | Variable | Meaning |
@@ -106,8 +107,11 @@ $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
 | `REAL_SHOCK_ESP32_BLE_NAME` | BLE name used for ESP32 auto-discovery |
 | `REAL_SHOCK_ESP32_BLE_SCAN_SECONDS` | ESP32 scan time |
 | `REAL_SHOCK_ESP32_TIMEOUT` | ESP32 send timeout in seconds |
+| `REAL_SHOCK_ESP32_KEEPALIVE_SECONDS` | Idle interval for sending `status` keepalives to ESP32 |
 
 USB serial is still available as a debug fallback. Use `REAL_SHOCK_ESP32_TRANSPORT=serial` plus `REAL_SHOCK_ESP32_SERIAL_PORT`. HTTP mode is used only when `REAL_SHOCK_ESP32_TRANSPORT=http` and `REAL_SHOCK_ESP32_URL` are set.
+
+Turn on `Debug max Lv3` in the dashboard to cap all ESP32 output at level 3.
 
 ## 6. Launch
 

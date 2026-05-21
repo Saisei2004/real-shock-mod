@@ -97,6 +97,7 @@ $env:REAL_SHOCK_ESP32_TRANSPORT = "ble"
 $env:REAL_SHOCK_ESP32_BLE_NAME = "RealShockESP32"
 $env:REAL_SHOCK_ESP32_BLE_SCAN_SECONDS = "6.0"
 $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
+$env:REAL_SHOCK_ESP32_KEEPALIVE_SECONDS = "5.0"
 ```
 
 | 変数 | 説明 |
@@ -108,8 +109,11 @@ $env:REAL_SHOCK_ESP32_TIMEOUT = "2.0"
 | `REAL_SHOCK_ESP32_BLE_NAME` | 自動探索するESP32のBLE名 |
 | `REAL_SHOCK_ESP32_BLE_SCAN_SECONDS` | ESP32探索時間 |
 | `REAL_SHOCK_ESP32_TIMEOUT` | ESP32送信タイムアウト秒 |
+| `REAL_SHOCK_ESP32_KEEPALIVE_SECONDS` | アイドル時にESP32へ `status` を送る間隔 |
 
 USBシリアル送信もデバッグ用に残しています。使う場合は `REAL_SHOCK_ESP32_TRANSPORT=serial` と `REAL_SHOCK_ESP32_SERIAL_PORT` を指定します。HTTP送信は `REAL_SHOCK_ESP32_TRANSPORT=http` と `REAL_SHOCK_ESP32_URL` を指定した場合だけ使います。
+
+ダッシュボードの `Debug max Lv3` をONにすると、ESP32へ送る最大レベルを3に制限できます。
 
 ## 6. 起動する
 

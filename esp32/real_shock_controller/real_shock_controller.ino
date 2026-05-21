@@ -20,6 +20,8 @@ const Button BUTTONS[] = {
 
 const int BUTTON_PRESS_MS = 27;
 const int BUTTON_RELEASE_MS = 1;
+const int UP_REPEAT_GAP_MS = 1;
+const int DOWN_REPEAT_GAP_MS = 30;
 const int LEVEL_MIN = 0;
 const int LEVEL_MAX = 15;
 const unsigned long ZERO_STALE_MS = 13000;
@@ -119,7 +121,15 @@ void enterMode3() {
   currentMode = 3;
 }
 
+void drainBeforePowerOn() {
+  for (int i = 0; i < 3; i++) {
+    pressButton('C');
+    delay(DOWN_REPEAT_GAP_MS);
+  }
+}
+
 void powerOnToZeroAndMode3() {
+  drainBeforePowerOn();
   pressButton('A');
   currentLevel = 0;
   zeroSinceMs = millis();
@@ -148,10 +158,12 @@ void setLevel(int targetLevel) {
   while (currentLevel < targetLevel) {
     pressButton('A');
     currentLevel++;
+    delay(UP_REPEAT_GAP_MS);
   }
   while (currentLevel > targetLevel) {
     pressButton('C');
     currentLevel--;
+    delay(DOWN_REPEAT_GAP_MS);
   }
   noteZeroIfNeeded();
 }
