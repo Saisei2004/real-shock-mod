@@ -13,9 +13,9 @@ const char *BLE_SERVICE_UUID = "6d8f0001-7f4f-4f1d-9b55-1f4a6c3f3a10";
 const char *BLE_COMMAND_UUID = "6d8f0002-7f4f-4f1d-9b55-1f4a6c3f3a10";
 
 const Button BUTTONS[] = {
-  {'A', 23}, // intensity up
-  {'B', 22}, // mode change
-  {'C', 19}, // intensity down
+  {'A', 32}, // intensity up
+  {'B', 33}, // mode change. GPIO34 is input-only on ESP32.
+  {'C', 25}, // intensity down
 };
 
 const int BUTTON_PRESS_MS = 26;
@@ -288,7 +288,7 @@ void setup() {
   advertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();
 
-  Serial.println("READY RealShockESP32 BLE A=23 B=22 C=19 mode=3 level=0");
+  Serial.println("READY RealShockESP32 BLE A=32 B=33 C=25 mode=3 level=0");
 }
 
 void loop() {
