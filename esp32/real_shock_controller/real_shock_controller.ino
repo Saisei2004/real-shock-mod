@@ -156,6 +156,46 @@ void setLevel(int targetLevel) {
   noteZeroIfNeeded();
 }
 
+void runCycle(int targetLevel, int downGapMs, int holdMs, int upGapMs) {
+  targetLevel = constrain(targetLevel, LEVEL_MIN, LEVEL_MAX);
+  downGapMs = constrain(downGapMs, 0, 5000);
+  holdMs = constrain(holdMs, 0, 10000);
+  upGapMs = constrain(upGapMs, 0, 5000);
+
+  prepareDevice();
+  outputActive = false;
+
+  while (currentLevel < targetLevel) {
+    pressButton('A');
+    currentLevel++;
+    delay(upGapMs);
+  }
+  while (currentLevel > targetLevel) {
+    pressButton('C');
+    currentLevel--;
+    delay(downGapMs);
+  }
+
+  delay(holdMs);
+
+  while (currentLevel > 0) {
+    pressButton('C');
+    currentLevel--;
+    delay(downGapMs);
+  }
+  noteZeroIfNeeded();
+
+  Serial.print("OK cycle level=");
+  Serial.print(targetLevel);
+  Serial.print(" down_gap_ms=");
+  Serial.print(downGapMs);
+  Serial.print(" hold_ms=");
+  Serial.print(holdMs);
+  Serial.print(" up_gap_ms=");
+  Serial.println(upGapMs);
+  printStatus();
+}
+
 void printStatus() {
   Serial.print("STATUS level=");
   Serial.print(currentLevel);
@@ -283,6 +323,18 @@ void handleCommand(char *line) {
     }
     return;
   }
+  if (strcmp(verb, "cycle") == 0) {
+    int downGapMs = 800;
+    int holdMs = 1000;
+    int upGapMs = 250;
+    int parsed = sscanf(line, "%15s %d %d %d %d", verb, &intensity, &downGapMs, &holdMs, &upGapMs);
+    if (parsed >= 2) {
+      runCycle(intensity, downGapMs, holdMs, upGapMs);
+    } else {
+      Serial.println("ERR use: cycle level [down_gap_ms] [hold_ms] [up_gap_ms]");
+    }
+    return;
+  }
   if (strcmp(verb, "event") == 0) {
     if (sscanf(line, "%15s %19s %d %d %d", verb, kind, &intensity, &durationMs, &eventId) >= 4) {
       runEvent(kind, intensity, durationMs, eventId);
@@ -292,7 +344,7 @@ void handleCommand(char *line) {
     return;
   }
 
-  Serial.println("ERR commands: event/status/none/level/button/hold/mode3/resetstate");
+  Serial.println("ERR commands: event/status/none/level/cycle/button/hold/mode3/resetstate");
 }
 
 void setup() {
