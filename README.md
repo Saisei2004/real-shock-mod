@@ -19,6 +19,8 @@ ESP32側はそのコマンドを受け取り、現実世界のプレイヤーに
 
 English version: [README.en.md](README.en.md)
 
+更新履歴: [CHANGELOG.md](CHANGELOG.md)
+
 <p align="center">
   <img src="docs/images/concept.png" alt="RE:AL SHOCK MOD concept">
 </p>

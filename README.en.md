@@ -19,6 +19,8 @@ In other words: if the game hurts, reality answers.
 
 Japanese version: [README.md](README.md)
 
+Changelog: [CHANGELOG.md](CHANGELOG.md)
+
 <p align="center">
   <img src="docs/images/concept.png" alt="RE:AL SHOCK MOD concept">
 </p>
