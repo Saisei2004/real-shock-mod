@@ -51,10 +51,156 @@ const fields = {
   debugFaltering: $("debugFaltering"),
   debugNone: $("debugNone"),
   debugMode: $("debugMode"),
+  lowOutputMode: $("lowOutputMode"),
+  englishMode: $("englishMode"),
 };
 
 const hrCanvas = $("hrChart");
 const rrCanvas = $("rrChart");
+let currentLanguage = "ja";
+
+const translations = {
+  ja: {
+    activeCommand: "ACTIVE COMMAND",
+    battery: "Battery",
+    booting: "起動中",
+    bpm: "bpm",
+    browserConnected: "ブラウザ接続済み",
+    collectingRr: "RR interval を集めています。",
+    commandLog: "Command Log",
+    contact: "Contact",
+    debugMax: "Debug max Lv3",
+    detection: "Detection",
+    deviceWaiting: "H6M を待機中",
+    disabled: "disabled",
+    englishUi: "English UI",
+    falteringState: "ふらつき",
+    fearMetric: "警戒/緊張",
+    gameBooting: "RE9起動中 / ブリッジ更新待ち",
+    gameConnectedHp: "RE9接続中 / プレイヤーHP取得中",
+    gameConnectedSearch: "RE9接続中 / プレイヤー探索中",
+    gameNotRunning: "RE9未起動",
+    lowOutput: "低出力 Lv10",
+    measuring: "計測中",
+    movementMetric: "姿勢/体動",
+    none: "なし",
+    normalState: "通常",
+    notRecording: "未録画",
+    reconnecting: "再接続中",
+    recordingActive: "を録画中",
+    recordingNamePlaceholder: "保存名",
+    saved: "保存済み",
+    samples: "Samples",
+    settingsFailed: "settings failed",
+    start: "Start",
+    startFailed: "開始できませんでした",
+    startleMetric: "びっくり",
+    stop: "Stop",
+    stopFailed: "停止できませんでした",
+    waiting: "待機中",
+    waitingGame: "ゲーム監視を待機中",
+    waitingRe9: "RE9監視を待機中",
+  },
+  en: {
+    activeCommand: "ACTIVE COMMAND",
+    battery: "Battery",
+    booting: "Booting",
+    bpm: "bpm",
+    browserConnected: "Browser connected",
+    collectingRr: "Collecting RR intervals.",
+    commandLog: "Command Log",
+    contact: "Contact",
+    debugMax: "Debug max Lv3",
+    detection: "Detection",
+    deviceWaiting: "Waiting for H6M",
+    disabled: "disabled",
+    englishUi: "English UI",
+    falteringState: "Faltering",
+    fearMetric: "Fear/Tension",
+    gameBooting: "RE9 running / waiting for bridge",
+    gameConnectedHp: "RE9 connected / reading player HP",
+    gameConnectedSearch: "RE9 connected / searching player",
+    gameNotRunning: "RE9 not running",
+    lowOutput: "Low output Lv10",
+    measuring: "Measuring",
+    movementMetric: "Posture/Motion",
+    none: "None",
+    normalState: "Normal",
+    notRecording: "Not recording",
+    reconnecting: "Reconnecting",
+    recordingActive: "recording",
+    recordingNamePlaceholder: "Recording name",
+    saved: "Saved",
+    samples: "Samples",
+    settingsFailed: "settings failed",
+    start: "Start",
+    startFailed: "Could not start",
+    startleMetric: "Startle",
+    stop: "Stop",
+    stopFailed: "Could not stop",
+    waiting: "Waiting",
+    waitingGame: "Waiting for game monitor",
+    waitingRe9: "Waiting for RE9 monitor",
+  },
+};
+
+const commandLabels = {
+  ja: {
+    none: "なし",
+    faltering: "ふらつき",
+    startle: "びっくり",
+    damage: "ダメージ",
+    death: "死亡",
+  },
+  en: {
+    none: "None",
+    faltering: "Faltering",
+    startle: "Startle",
+    damage: "Damage",
+    death: "Death",
+  },
+};
+
+const knownText = {
+  en: {
+    "なし": "None",
+    "ふらつき": "Faltering",
+    "びっくり": "Startle",
+    "ダメージ": "Damage",
+    "死亡": "Death",
+    "安定": "Stable",
+    "平常": "Normal",
+    "計測中": "Measuring",
+    "起動中": "Booting",
+    "接触不安定": "Weak contact",
+    "負荷高め": "High load",
+    "落ち着き": "Calm",
+    "やや負荷": "Slight load",
+  },
+};
+
+function t(key) {
+  return translations[currentLanguage]?.[key] || translations.ja[key] || key;
+}
+
+function localizeKnown(value) {
+  if (value === null || value === undefined) return value;
+  return knownText[currentLanguage]?.[value] || value;
+}
+
+function labelForCommand(kind, fallback) {
+  return commandLabels[currentLanguage]?.[kind] || localizeKnown(fallback) || kind || t("none");
+}
+
+function applyTranslations() {
+  document.documentElement.lang = currentLanguage;
+  document.querySelectorAll("[data-i18n]").forEach((node) => {
+    node.textContent = t(node.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
+    node.setAttribute("placeholder", t(node.dataset.i18nPlaceholder));
+  });
+}
 
 function fmt(value, suffix = "", digits = 1) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return `--${suffix}`;
@@ -63,14 +209,16 @@ function fmt(value, suffix = "", digits = 1) {
 
 function setStatus(status, message) {
   fields.connDot.className = `dot ${status || "neutral"}`;
-  fields.connText.textContent = message || status || "待機中";
+  fields.connText.textContent = localizeKnown(message) || status || t("waiting");
 }
 
 function setState(state) {
   const tone = state?.tone || "neutral";
   fields.state.className = `state ${tone}`;
-  fields.state.textContent = state?.label || "計測中";
-  fields.stateDetail.textContent = state?.detail || "RR interval を集めています。";
+  fields.state.textContent = localizeKnown(state?.label) || t("measuring");
+  fields.stateDetail.textContent = currentLanguage === "en"
+    ? t("collectingRr")
+    : state?.detail || t("collectingRr");
 }
 
 function drawChart(canvas, points, options) {
@@ -145,7 +293,7 @@ function update(data) {
   setStatus(data.status, data.message);
   setState(data.state);
 
-  fields.deviceName.textContent = device.name || "H6M を待機中";
+  fields.deviceName.textContent = device.name || t("deviceWaiting");
   fields.bpm.textContent = measurement.bpm ?? "--";
   fields.rmssd.textContent = fmt(hrv.rmssd_ms, " ms");
   fields.sdnn.textContent = fmt(hrv.sdnn_ms, " ms");
@@ -176,10 +324,28 @@ function update(data) {
 }
 
 function updateSettings(settings) {
-  if (!fields.debugMode) return;
-  const enabled = Boolean(settings?.debug_mode);
-  if (fields.debugMode.checked !== enabled) {
-    fields.debugMode.checked = enabled;
+  const language = settings?.ui_language === "en" ? "en" : "ja";
+  if (language !== currentLanguage) {
+    currentLanguage = language;
+    applyTranslations();
+  }
+  if (fields.englishMode) {
+    const enabled = language === "en";
+    if (fields.englishMode.checked !== enabled) {
+      fields.englishMode.checked = enabled;
+    }
+  }
+  if (fields.debugMode) {
+    const enabled = Boolean(settings?.debug_mode);
+    if (fields.debugMode.checked !== enabled) {
+      fields.debugMode.checked = enabled;
+    }
+  }
+  if (fields.lowOutputMode) {
+    const enabled = Boolean(settings?.low_output_mode);
+    if (fields.lowOutputMode.checked !== enabled) {
+      fields.lowOutputMode.checked = enabled;
+    }
   }
 }
 
@@ -201,11 +367,13 @@ function updateDetection(detection) {
   fields.detectPrimary.className = tone;
   const confidence = detection?.confidence ?? 0;
   fields.detectPrimary.textContent = detection?.primary
-    ? `${detection.primary} ${scoreText(confidence)}`
-    : "計測中";
-  fields.detectReasons.textContent = detection?.reasons?.length
+    ? `${localizeKnown(detection.primary)} ${scoreText(confidence)}`
+    : t("measuring");
+  fields.detectReasons.textContent = currentLanguage === "en"
+    ? t("collectingRr")
+    : detection?.reasons?.length
     ? detection.reasons.join(" / ")
-    : "RR interval を集めています。";
+    : t("collectingRr");
 
   const startle = detection?.startle_score || 0;
   const fear = detection?.fear_tension_score || 0;
@@ -227,15 +395,17 @@ function updateRecording(recording) {
   if (active) {
     const elapsed = Number(recording.elapsed_seconds || 0);
     fields.recordingProgress.style.width = "100%";
-    fields.recordingStatus.textContent = `${recording.name} を録画中 / ${Math.floor(elapsed)} 秒 / ${recording.samples || 0} samples`;
+    fields.recordingStatus.textContent = currentLanguage === "en"
+      ? `${recording.name} ${t("recordingActive")} / ${Math.floor(elapsed)}s / ${recording.samples || 0} samples`
+      : `${recording.name} ${t("recordingActive")} / ${Math.floor(elapsed)} 秒 / ${recording.samples || 0} samples`;
     fields.recordingSaved.textContent = "";
     return;
   }
 
   fields.recordingProgress.style.width = "0%";
-  fields.recordingStatus.textContent = "未録画";
+  fields.recordingStatus.textContent = t("notRecording");
   if (recording?.saved) {
-    fields.recordingSaved.textContent = `保存済み: ${recording.saved.csv} / ${recording.saved.sample_count} samples`;
+    fields.recordingSaved.textContent = `${t("saved")}: ${recording.saved.csv} / ${recording.saved.sample_count} samples`;
   }
 }
 
@@ -244,18 +414,18 @@ function updateGame(game, commands, esp32) {
   const gameInfo = status.game || {};
   const bridge = status.bridge || {};
   const player = status.player || {};
-  const active = commands?.active || { kind: "none", label: "なし", source: "--", payload: {} };
+  const active = commands?.active || { kind: "none", label: t("none"), source: "--", payload: {} };
   const running = Boolean(gameInfo.running);
   const fresh = Boolean(bridge.fresh);
 
   if (running && fresh && player.found) {
-    fields.gameStatus.textContent = "RE9接続中 / プレイヤーHP取得中";
+    fields.gameStatus.textContent = t("gameConnectedHp");
   } else if (running && fresh) {
-    fields.gameStatus.textContent = "RE9接続中 / プレイヤー探索中";
+    fields.gameStatus.textContent = t("gameConnectedSearch");
   } else if (running) {
-    fields.gameStatus.textContent = "RE9起動中 / ブリッジ更新待ち";
+    fields.gameStatus.textContent = t("gameBooting");
   } else {
-    fields.gameStatus.textContent = "RE9未起動";
+    fields.gameStatus.textContent = t("gameNotRunning");
   }
 
   const hp = player.hp;
@@ -270,7 +440,7 @@ function updateGame(game, commands, esp32) {
   fields.hpFill.style.width = hpPercent === null || hpPercent === undefined
     ? "0%"
     : `${Math.max(0, Math.min(100, Number(hpPercent)))}%`;
-  const faltering = player.faltering_low_hp ? "ふらつき" : "通常";
+  const faltering = player.faltering_low_hp ? t("falteringState") : t("normalState");
   fields.mainGameSub.textContent = `${fields.gameStatus.textContent} / ${faltering}`;
   fields.gameBridge.textContent = bridge.fresh
     ? `fresh ${fmt(bridge.age_seconds, "s", 1)}`
@@ -278,7 +448,7 @@ function updateGame(game, commands, esp32) {
 
   const recent = commands?.recent || [];
   fields.activeCommand.className = active.kind || "none";
-  fields.activeCommand.textContent = active.label || active.kind || "none";
+  fields.activeCommand.textContent = labelForCommand(active.kind, active.label);
   const output = esp32?.last_sent?.output;
   const outputText = output
     ? ` / Lv${output.intensity} ${fmt((output.duration_ms || 0) / 1000, "s", 1)}`
@@ -287,7 +457,7 @@ function updateGame(game, commands, esp32) {
   document.body.classList.remove("command-none", "command-faltering", "command-startle", "command-damage", "command-death");
   document.body.classList.add(`command-${active.kind || "none"}`);
   fields.commandLog.textContent = recent.length
-    ? recent.slice(0, 3).map((event) => `${event.label || event.kind}@${event.source}`).join(" / ")
+    ? recent.slice(0, 3).map((event) => `${labelForCommand(event.kind, event.label)}@${event.source}`).join(" / ")
     : "--";
   if (esp32?.enabled) {
     const last = esp32.last_sent?.kind ? ` / ${esp32.last_sent.kind}` : "";
@@ -296,7 +466,7 @@ function updateGame(game, commands, esp32) {
     const ble = esp32.ble_name || esp32.ble_address ? ` ${esp32.ble_name || esp32.ble_address}` : "";
     fields.esp32Status.textContent = `${transport}${esp32.status || "waiting"}${last}${serial}${ble}`;
   } else {
-    fields.esp32Status.textContent = "disabled";
+    fields.esp32Status.textContent = t("disabled");
   }
 }
 
@@ -309,14 +479,14 @@ async function startRecording() {
     body: JSON.stringify({ name }),
   });
   if (!response.ok) {
-    fields.recordingSaved.textContent = `開始できませんでした: ${await response.text()}`;
+    fields.recordingSaved.textContent = `${t("startFailed")}: ${await response.text()}`;
   }
 }
 
 async function stopRecording() {
   const response = await fetch("/api/recording/stop", { method: "POST" });
   if (!response.ok) {
-    fields.recordingSaved.textContent = `停止できませんでした: ${await response.text()}`;
+    fields.recordingSaved.textContent = `${t("stopFailed")}: ${await response.text()}`;
   }
 }
 
@@ -331,22 +501,34 @@ async function sendDebugCommand(kind) {
   }
 }
 
-async function setDebugMode(enabled) {
+async function updateRuntimeSettings(payload) {
   const response = await fetch("/api/settings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ debug_mode: enabled }),
+    body: JSON.stringify(payload),
   });
   if (!response.ok) {
-    fields.commandLog.textContent = `settings failed: ${await response.text()}`;
+    fields.commandLog.textContent = `${t("settingsFailed")}: ${await response.text()}`;
   }
+}
+
+async function setDebugMode(enabled) {
+  await updateRuntimeSettings({ debug_mode: enabled });
+}
+
+async function setLowOutputMode(enabled) {
+  await updateRuntimeSettings({ low_output_mode: enabled });
+}
+
+async function setEnglishMode(enabled) {
+  await updateRuntimeSettings({ ui_language: enabled ? "en" : "ja" });
 }
 
 function connect() {
   const protocol = window.location.protocol === "https:" ? "wss" : "ws";
   const ws = new WebSocket(`${protocol}://${window.location.host}/ws`);
 
-  ws.addEventListener("open", () => setStatus("connected", "ブラウザ接続済み"));
+  ws.addEventListener("open", () => setStatus("connected", t("browserConnected")));
   ws.addEventListener("message", (event) => {
     try {
       update(JSON.parse(event.data));
@@ -355,7 +537,7 @@ function connect() {
     }
   });
   ws.addEventListener("close", () => {
-    setStatus("waiting", "再接続中");
+    setStatus("waiting", t("reconnecting"));
     setTimeout(connect, 1500);
   });
   ws.addEventListener("error", () => {
@@ -484,13 +666,13 @@ function runDemoMode(kind) {
 
 fields.startRecording.addEventListener("click", () => {
   startRecording().catch((error) => {
-    fields.recordingSaved.textContent = `開始できませんでした: ${error}`;
+    fields.recordingSaved.textContent = `${t("startFailed")}: ${error}`;
   });
 });
 
 fields.stopRecording.addEventListener("click", () => {
   stopRecording().catch((error) => {
-    fields.recordingSaved.textContent = `停止できませんでした: ${error}`;
+    fields.recordingSaved.textContent = `${t("stopFailed")}: ${error}`;
   });
 });
 
@@ -526,11 +708,24 @@ fields.debugNone.addEventListener("click", () => {
 
 fields.debugMode.addEventListener("change", () => {
   setDebugMode(fields.debugMode.checked).catch((error) => {
-    fields.commandLog.textContent = `settings failed: ${error}`;
+    fields.commandLog.textContent = `${t("settingsFailed")}: ${error}`;
+  });
+});
+
+fields.lowOutputMode.addEventListener("change", () => {
+  setLowOutputMode(fields.lowOutputMode.checked).catch((error) => {
+    fields.commandLog.textContent = `${t("settingsFailed")}: ${error}`;
+  });
+});
+
+fields.englishMode.addEventListener("change", () => {
+  setEnglishMode(fields.englishMode.checked).catch((error) => {
+    fields.commandLog.textContent = `${t("settingsFailed")}: ${error}`;
   });
 });
 
 const demoKind = new URLSearchParams(window.location.search).get("demo");
+applyTranslations();
 if (demoKind) {
   runDemoMode(demoKind);
 } else {

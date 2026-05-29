@@ -115,7 +115,7 @@ def send_line(port, baud, line, wait_seconds):
 
 def main():
     parser = argparse.ArgumentParser(description="ESP32 button controller debug tool")
-    parser.add_argument("command", nargs="*", help="status | none | level N | cycle N [down_gap_ms] | drain | button A | hold C 5000 | event kind intensity duration_ms")
+    parser.add_argument("command", nargs="*", help="status | none | level N | cycle N [down_gap_ms] | drain | switchtest [seconds] | button A | hold C 5000 | event kind intensity duration_ms")
     parser.add_argument("--transport", choices=("ble", "serial"), default=os.environ.get("REAL_SHOCK_ESP32_TRANSPORT", "ble"))
     parser.add_argument("--port", default=os.environ.get("REAL_SHOCK_ESP32_SERIAL_PORT", "/dev/cu.usbserial-120"))
     parser.add_argument("--baud", type=int, default=int(os.environ.get("REAL_SHOCK_ESP32_SERIAL_BAUD", "115200")))
@@ -134,6 +134,9 @@ def main():
         line = " ".join(args.command)
         if args.command[0] == "event" and len(args.command) >= 4:
             args.wait = max(args.wait, int(args.command[3]) / 1000 + 2.5)
+        elif args.command[0] == "switchtest":
+            seconds = int(args.command[1]) if len(args.command) >= 2 else 10
+            args.wait = max(args.wait, seconds + 2.5)
 
     if args.transport == "ble":
         return asyncio.run(send_line_ble(line, args.scan))

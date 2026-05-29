@@ -782,6 +782,12 @@ canvas {
   gap: 6px;
 }
 
+.mode-toggles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
 .debug-mode {
   display: flex;
   align-items: center;
@@ -794,6 +800,12 @@ canvas {
   color: var(--blue);
   font-size: 12px;
   font-weight: 800;
+  white-space: nowrap;
+}
+
+.debug-mode span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .debug-mode input {
@@ -1128,6 +1140,21 @@ canvas {
 
   .debug-actions {
     gap: 4px;
+  }
+
+  .mode-toggles {
+    gap: 4px;
+  }
+
+  .debug-mode {
+    gap: 5px;
+    padding: 0 5px;
+    font-size: 10px;
+  }
+
+  .debug-mode input {
+    width: 13px;
+    height: 13px;
   }
 
   .command-log {

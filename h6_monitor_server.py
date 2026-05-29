@@ -366,24 +366,46 @@ class RuntimeSettings:
     def __init__(self):
         self.debug_mode = False
         self.debug_max_intensity = 3
+        self.low_output_mode = False
+        self.low_output_max_intensity = 10
+        self.normal_max_intensity = 15
+        self.ui_language = "ja"
 
     def snapshot(self):
         return {
             "debug_mode": self.debug_mode,
             "debug_max_intensity": self.debug_max_intensity,
+            "low_output_mode": self.low_output_mode,
+            "low_output_max_intensity": self.low_output_max_intensity,
+            "normal_max_intensity": self.normal_max_intensity,
+            "ui_language": self.ui_language,
         }
 
     def update(self, payload):
         if "debug_mode" in payload:
             self.debug_mode = bool(payload.get("debug_mode"))
+        if "low_output_mode" in payload:
+            self.low_output_mode = bool(payload.get("low_output_mode"))
+        if "ui_language" in payload:
+            language = str(payload.get("ui_language") or "ja").lower()
+            self.ui_language = "en" if language == "en" else "ja"
         return self.snapshot()
+
+    def _append_reason(self, output, note):
+        reason = output.get("reason") or ""
+        output["reason"] = f"{reason}; {note}".strip("; ")
 
     def apply_output_limits(self, output):
         limited = dict(output)
-        if self.debug_mode and int(limited.get("intensity") or 0) > 0:
+        intensity = int(limited.get("intensity") or 0)
+        if self.low_output_mode and intensity > 0:
+            scaled = round(intensity * self.low_output_max_intensity / self.normal_max_intensity)
+            limited["intensity"] = max(1, min(self.low_output_max_intensity, scaled))
+            self._append_reason(limited, f"low output {self.low_output_max_intensity}/{self.normal_max_intensity}")
+            intensity = int(limited.get("intensity") or 0)
+        if self.debug_mode and intensity > 0:
             limited["intensity"] = min(int(limited["intensity"]), self.debug_max_intensity)
-            reason = limited.get("reason") or ""
-            limited["reason"] = f"{reason}; debug max {self.debug_max_intensity}".strip("; ")
+            self._append_reason(limited, f"debug max {self.debug_max_intensity}")
         return limited
 
 

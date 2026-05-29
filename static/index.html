@@ -14,12 +14,12 @@
           <span class="brand-mark">RE</span>
           <div>
             <h1>RE:AL SHOCK MOD</h1>
-            <p id="deviceName">H6M を待機中</p>
+            <p id="deviceName" data-i18n="deviceWaiting">H6M を待機中</p>
           </div>
         </div>
         <div class="status">
           <span id="connDot" class="dot neutral"></span>
-          <span id="connText">起動中</span>
+          <span id="connText" data-i18n="booting">起動中</span>
         </div>
       </section>
 
@@ -29,8 +29,8 @@
           <div class="corner top-right"></div>
           <div class="corner bottom-left"></div>
           <div class="corner bottom-right"></div>
-          <span class="eyebrow">ACTIVE COMMAND</span>
-          <strong id="activeCommand">なし</strong>
+          <span class="eyebrow" data-i18n="activeCommand">ACTIVE COMMAND</span>
+          <strong id="activeCommand" data-i18n="none">なし</strong>
           <p id="activeCommandDetail">none / command-priority</p>
           <div class="command-rail" id="commandRail" aria-hidden="true">
             <span data-command="death">DEATH</span>
@@ -50,11 +50,11 @@
           </div>
           <div class="bpm">
             <span id="bpm">--</span>
-            <span>bpm</span>
+              <span data-i18n="bpm">bpm</span>
           </div>
           <div class="state-line">
-            <div id="state" class="state neutral">計測中</div>
-            <p id="stateDetail">RR interval を集めています。</p>
+            <div id="state" class="state neutral" data-i18n="measuring">計測中</div>
+            <p id="stateDetail" data-i18n="collectingRr">RR interval を集めています。</p>
           </div>
           <div class="vital-strip">
             <div>
@@ -86,19 +86,19 @@
             </div>
             <div class="hp-bar" aria-hidden="true"><div id="hpFill"></div></div>
           </div>
-          <p id="mainGameSub">RE9監視を待機中</p>
-          <p id="gameStatus">ゲーム監視を待機中</p>
+          <p id="mainGameSub" data-i18n="waitingRe9">RE9監視を待機中</p>
+          <p id="gameStatus" data-i18n="waitingGame">ゲーム監視を待機中</p>
           <div class="detail-grid">
             <div class="detail-row">
-              <span>Contact</span>
+              <span data-i18n="contact">Contact</span>
               <strong id="contact">--</strong>
             </div>
             <div class="detail-row">
-              <span>Battery</span>
+              <span data-i18n="battery">Battery</span>
               <strong id="battery">-- %</strong>
             </div>
             <div class="detail-row">
-              <span>Samples</span>
+              <span data-i18n="samples">Samples</span>
               <strong id="samples">0 RR</strong>
             </div>
             <div class="detail-row">
@@ -110,28 +110,28 @@
 
         <section class="panel detector" aria-label="fear detection">
           <div class="detector-main">
-            <span>Detection</span>
-            <strong id="detectPrimary">計測中</strong>
-            <p id="detectReasons">RR interval を集めています。</p>
+            <span data-i18n="detection">Detection</span>
+            <strong id="detectPrimary" data-i18n="measuring">計測中</strong>
+            <p id="detectReasons" data-i18n="collectingRr">RR interval を集めています。</p>
           </div>
           <div class="score-stack">
             <div class="score-row">
               <div>
-                <span>びっくり</span>
+                <span data-i18n="startleMetric">びっくり</span>
                 <strong id="startleScore">0%</strong>
               </div>
               <div class="bar"><div id="startleBar"></div></div>
             </div>
             <div class="score-row">
               <div>
-                <span>警戒/緊張</span>
+                <span data-i18n="fearMetric">警戒/緊張</span>
                 <strong id="fearScore">0%</strong>
               </div>
               <div class="bar"><div id="fearBar"></div></div>
             </div>
             <div class="score-row">
               <div>
-                <span>姿勢/体動</span>
+                <span data-i18n="movementMetric">姿勢/体動</span>
                 <strong id="movementScore">0%</strong>
               </div>
               <div class="bar"><div id="movementBar"></div></div>
@@ -161,14 +161,14 @@
             <span id="address">--</span>
           </div>
           <div class="recording-form">
-            <input id="recordingName" type="text" autocomplete="off" placeholder="保存名">
-            <button id="startRecording" type="button">Start</button>
-            <button id="stopRecording" type="button">Stop</button>
+            <input id="recordingName" type="text" autocomplete="off" placeholder="保存名" data-i18n-placeholder="recordingNamePlaceholder">
+            <button id="startRecording" type="button" data-i18n="start">Start</button>
+            <button id="stopRecording" type="button" data-i18n="stop">Stop</button>
           </div>
           <div class="progress">
             <div id="recordingProgress"></div>
           </div>
-          <p id="recordingStatus">未録画</p>
+          <p id="recordingStatus" data-i18n="notRecording">未録画</p>
           <p id="recordingSaved" class="saved"></p>
           <div class="debug-actions">
             <button id="debugDamage" type="button">Damage</button>
@@ -177,17 +177,27 @@
             <button id="debugFaltering" type="button">Falter</button>
             <button id="debugNone" type="button">None</button>
           </div>
-          <label class="debug-mode">
-            <input id="debugMode" type="checkbox">
-            <span>Debug max Lv3</span>
-          </label>
+          <div class="mode-toggles">
+            <label class="debug-mode">
+              <input id="debugMode" type="checkbox">
+              <span data-i18n="debugMax">Debug max Lv3</span>
+            </label>
+            <label class="debug-mode">
+              <input id="lowOutputMode" type="checkbox">
+              <span data-i18n="lowOutput">低出力 Lv10</span>
+            </label>
+            <label class="debug-mode">
+              <input id="englishMode" type="checkbox">
+              <span data-i18n="englishUi">English UI</span>
+            </label>
+          </div>
           <div class="command-log">
-            <span>Command Log</span>
+            <span data-i18n="commandLog">Command Log</span>
             <strong id="commandLog">--</strong>
           </div>
           <div class="esp32-line">
             <span>ESP32</span>
-            <strong id="esp32Status">disabled</strong>
+            <strong id="esp32Status" data-i18n="disabled">disabled</strong>
           </div>
           <strong class="raw-line" id="raw">--</strong>
         </section>

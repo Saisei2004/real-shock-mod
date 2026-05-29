@@ -8,7 +8,7 @@
 ![Python](https://img.shields.io/badge/Python-3.14%2B-3776ab)
 ![BLE](https://img.shields.io/badge/BLE-COOSPO%20H6-86f0a8)
 ![REFramework](https://img.shields.io/badge/REFramework-Lua%20Bridge-e3b45a)
-![ESP32](https://img.shields.io/badge/ESP32-Local%20HTTP-e65a4f)
+![ESP32](https://img.shields.io/badge/ESP32-BLE%20%2F%20Serial-e65a4f)
 
 **In-game damage becomes a real electric shock.**
 
@@ -32,7 +32,7 @@ Japanese version: [README.md](README.md)
 
 ## Setup
 
-For the full copy-paste setup flow, from `git clone` to ESP32 URL configuration, see [this setup guide](docs/SETUP.en.md).
+For the full copy-paste setup flow, from `git clone` to ESP32 BLE configuration, see [this setup guide](docs/SETUP.en.md).
 
 ## Main Parts Used
 
@@ -42,8 +42,8 @@ For the full copy-paste setup flow, from `git clone` to ESP32 URL configuration,
 |---|---|---|
 | <img src="https://m.media-amazon.com/images/I/51t4L53Lc+L._AC_SL1500_.jpg" width="80" alt="COOSPO heart-rate sensor"> | [COOSPO Heart Rate Monitor](https://amzn.asia/d/03qclP31) | Chest-strap heart-rate sensor used to read BPM and RR intervals |
 | <img src="https://m.media-amazon.com/images/I/51hKRw0oDXL._AC_SL1000_.jpg" width="80" alt="RELX EMS belt"> | [RELX EMS Belt](https://amzn.asia/d/0725U7pu) | Base device for the electric-shock penalty side |
-| <img src="https://m.media-amazon.com/images/I/71jILh4qbLL._AC_SL1500_.jpg" width="80" alt="DiyStudio ESP32 development board"> | [DiyStudio ESP32 Development Board](https://amzn.asia/d/06wo77h9) | Wi-Fi/Bluetooth board that receives HTTP commands from the PC |
-| <img src="https://m.media-amazon.com/images/I/61nTf-bRj4L._SL1000_.jpg" width="80" alt="KKHMF relay module"> | [KKHMF 5V 1-Channel Relay Module](https://amzn.asia/d/0ijeHtMs) | Relay module used to switch an external device from an ESP32 signal |
+| <img src="https://m.media-amazon.com/images/I/71jILh4qbLL._AC_SL1500_.jpg" width="80" alt="DiyStudio ESP32 development board"> | [DiyStudio ESP32 Development Board](https://amzn.asia/d/06wo77h9) | Wi-Fi/Bluetooth board that receives BLE/USB serial commands from the PC |
+| Small electronics parts | Electronics shop, etc. | NPN transistors, resistors, jumper wires, and the emergency drain tact switch used for A/B/C button control |
 
 ## What This Is Trying To Do
 
@@ -54,7 +54,7 @@ Behind the scenes, the PC watches both the game and the player's body.
 |---|---|---|
 | The player is bitten or attacked | HP drop, damage counter | Sends `damage` to ESP32, electric shock |
 | The player dies | HP 0, death state | Sends `death` to ESP32, strongest penalty |
-| HP enters danger range | HP at or below 16.75% | Sends `faltering`, warning shock |
+| HP enters danger range | In-game Danger state, or fallback HP at or below 16.75% | Sends `faltering`, warning shock |
 | The player actually startles | RR interval drop, BPM rise | Sends `startle`, reaction penalty |
 | Nothing is happening | Normal state | Sends `none`, clears output |
 
@@ -73,7 +73,7 @@ flowchart LR
     B --> D
     D --> E["Browser UI"]
     D --> F["Command Engine"]
-    F -->|"HTTP JSON"| G["ESP32"]
+    F -->|"BLE / USB Serial event"| G["ESP32"]
     G --> H["Electric-Shock Penalty Device"]
 ```
 
@@ -84,7 +84,7 @@ What is included in this repository:
 | Python server | Combines BLE heart-rate data, REFramework bridge data, ESP32 output, and the Web UI |
 | REFramework Lua Bridge | Exposes HP and damage state from the game |
 | Browser UI | Shows biometric signals, game status, and the active command on one screen |
-| ESP32 sender | Sends command JSON to an ESP32 on the same network |
+| ESP32 sender | Sends event commands to an ESP32 over BLE or USB serial |
 | Sample biometric data | My real heart-rate logs used while tuning startle detection |
 
 ## Command Priority
@@ -135,7 +135,7 @@ This is the most direct part of the mod.
 
 ### Faltering: `faltering`
 
-When HP drops to **16.75% or lower**, the player is in the danger zone. This is meant for a warning shock rather than the strongest penalty.
+When the game reports the player is in the Danger state, the player is in the danger zone. If that game-side Danger signal is unavailable, HP at **16.75% or lower** is used as a fallback. This is meant for a warning shock rather than the strongest penalty.
 
 | Gameplay | RE:AL SHOCK MOD UI |
 |---|---|
@@ -173,32 +173,21 @@ Raw BPM alone is weak, so the detector also watches RR interval behavior.
 
 The included CSV data contains real logs from horror movies, BIOHAZARD gameplay, Gonjiam, posture-change tests, and yawning. The detector was tuned by comparing real startles against body-movement false positives.
 
-## JSON Sent To ESP32
+## Command Sent To ESP32
 
-Set the ESP32 HTTP endpoint:
+By default, the PC auto-discovers the BLE device named `RealShockESP32` and sends one-line commands to the ESP32. USB serial is also available for debugging.
 
-```powershell
-$env:REAL_SHOCK_ESP32_URL = "http://192.168.0.50/command"
+```text
+event <kind> <level> <duration_ms> <id>
 ```
 
-Example payload:
+Example command:
 
-```json
-{
-  "system": "RE:AL SHOCK MOD",
-  "command": "damage",
-  "label": "ダメージ",
-  "priority": 3,
-  "source": "re9-bridge",
-  "issued_at": "2026-05-18T02:18:42.120",
-  "payload": {
-    "hp_percent": 42,
-    "damage_count": 7
-  }
-}
+```text
+event damage 10 3000 42
 ```
 
-The ESP32 can switch shock patterns based on the `command` value.
+The PC converts `damage` / `death` / `startle` / `faltering` into a level and duration, then the ESP32 converts that into A/B/C button presses. HTTP JSON remains as a compatibility path, but it is not the default route.
 
 | Command | Example use |
 |---|---|
@@ -212,13 +201,13 @@ The ESP32 can switch shock patterns based on the `command` value.
 
 The current implementation has the ESP32 operate the external device's A/B/C buttons. The original concept, screenshots, and images remain in this README, while the implemented ESP32 path auto-discovers the BLE device named `RealShockESP32` and sends `event <kind> <level> <duration_ms> <id>`. USB serial is still available as a debug fallback.
 
-Button mapping is `A=GPIO32` for intensity up, `B=GPIO33` for mode change, and `C=GPIO25` for intensity down. ESP32 `GPIO34` is input-only, so it is not used for button output. On startup, the ESP32 presses C three times to drain any stale level, then presses A once to reach level 0 and B twice to enter mode 3. If level 0 has been idle for 13+ seconds, the firmware presses C once before the next output, treats the device as `-1`, then presses A until the requested level is reached. Repeated C presses inside the ESP32 use a 30ms gap.
+Button mapping is `A=GPIO33` for intensity up, `B=GPIO32` for mode change, and `C=GPIO25` for intensity down. ESP32 `GPIO34` is input-only, so it is not used for button output. On startup, the ESP32 presses C three times to drain any stale level, then presses A once to reach level 0 and B twice to enter mode 3. If level 0 has been idle for 13+ seconds, the firmware presses C once before the next output, treats the device as `-1`, then presses A until the requested level is reached. Repeated C presses inside the ESP32 use a 30ms gap.
 
 The emergency drain tact switch uses `GPIO27`. The ESP32 reads it with `INPUT_PULLUP`, so wire one side of the switch to `GPIO27` and the other side to `GND`. Do not connect the switch to `3V3`. When pressed, the ESP32 presses C 30 times and marks its internal state as uninitialized.
 
 The PC sends a single `event <kind> <level> <duration_ms> <id>` line. The ESP32 performs the A/C button sequence and returns to level 0 after the event duration. BLE/Serial sends periodic `status` keepalives while idle so the next damage event is less likely to wait on reconnection.
 
-When `Debug max Lv3` is enabled in the UI, both live detection and manual debug commands are capped at level 3 before they are sent to the ESP32. Transient HP 0 samples around character switching are ignored briefly so they do not produce false `damage` or `death` commands.
+All mode switches live in the Control panel. When `Low output Lv10` is enabled in the UI, the normal max-Lv15 scale is normalized to max Lv10 before commands are sent to the ESP32. For example, Lv15 becomes Lv10 and Lv12 becomes Lv8. When `Debug max Lv3` is enabled, both live detection and manual debug commands are capped at level 3 before they are sent to the ESP32. `English UI` switches the dashboard text to English. Transient HP 0 samples around character switching are ignored briefly so they do not produce false `damage` or `death` commands.
 
 Added firmware and debug tool:
 
@@ -262,6 +251,7 @@ ESP32 debug commands:
 | `GET` | `/api/game` | Game-side state |
 | `GET` | `/api/commands` | Active command state |
 | `GET` | `/api/esp32` | ESP32 sender state |
+| `GET` / `POST` | `/api/settings` | Read or update UI language, low-output mode, and debug cap |
 | `POST` | `/api/debug/command/death` | Debug death command |
 | `POST` | `/api/debug/command/damage` | Debug damage command |
 | `POST` | `/api/debug/command/startle` | Debug startle command |
