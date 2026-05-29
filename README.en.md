@@ -212,7 +212,9 @@ The ESP32 can switch shock patterns based on the `command` value.
 
 The current implementation has the ESP32 operate the external device's A/B/C buttons. The original concept, screenshots, and images remain in this README, while the implemented ESP32 path auto-discovers the BLE device named `RealShockESP32` and sends `event <kind> <level> <duration_ms> <id>`. USB serial is still available as a debug fallback.
 
-Button mapping is `A=GPIO25` for intensity up, `B=GPIO33` for mode change, and `C=GPIO32` for intensity down. ESP32 `GPIO34` is input-only, so it is not used for button output. On startup, the ESP32 presses C three times to drain any stale level, then presses A once to reach level 0 and B twice to enter mode 3. If level 0 has been idle for 13+ seconds, the firmware presses C once before the next output, treats the device as `-1`, then presses A until the requested level is reached. Repeated C presses inside the ESP32 use a 30ms gap.
+Button mapping is `A=GPIO32` for intensity up, `B=GPIO33` for mode change, and `C=GPIO25` for intensity down. ESP32 `GPIO34` is input-only, so it is not used for button output. On startup, the ESP32 presses C three times to drain any stale level, then presses A once to reach level 0 and B twice to enter mode 3. If level 0 has been idle for 13+ seconds, the firmware presses C once before the next output, treats the device as `-1`, then presses A until the requested level is reached. Repeated C presses inside the ESP32 use a 30ms gap.
+
+The emergency drain tact switch uses `GPIO27`. The ESP32 reads it with `INPUT_PULLUP`, so wire one side of the switch to `GPIO27` and the other side to `GND`. Do not connect the switch to `3V3`. When pressed, the ESP32 presses C 30 times and marks its internal state as uninitialized.
 
 The PC sends a single `event <kind> <level> <duration_ms> <id>` line. The ESP32 performs the A/C button sequence and returns to level 0 after the event duration. BLE/Serial sends periodic `status` keepalives while idle so the next damage event is less likely to wait on reconnection.
 
@@ -248,6 +250,7 @@ ESP32 debug commands:
 | --- | --- |
 | `button A` / `button B` / `button C` | Press one button once |
 | `hold C 5000` | Hold a button for wiring checks |
+| `drain` | Press C 30 times; same action as the GPIO27 emergency switch |
 | `cycle 4 30` | Raise to level 4, wait 1s, then return to 0 with 30ms C gaps |
 
 ## API

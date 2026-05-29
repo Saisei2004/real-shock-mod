@@ -13,15 +13,18 @@ const char *BLE_SERVICE_UUID = "6d8f0001-7f4f-4f1d-9b55-1f4a6c3f3a10";
 const char *BLE_COMMAND_UUID = "6d8f0002-7f4f-4f1d-9b55-1f4a6c3f3a10";
 
 const Button BUTTONS[] = {
-  {'A', 25}, // intensity up
+  {'A', 32}, // intensity up
   {'B', 33}, // mode change. GPIO34 is input-only on ESP32.
-  {'C', 32}, // intensity down
+  {'C', 25}, // intensity down
 };
 
+const int EMERGENCY_DRAIN_PIN = 27;
+const int EMERGENCY_DRAIN_COUNT = 30;
 const int BUTTON_PRESS_MS = 27;
 const int BUTTON_RELEASE_MS = 1;
 const int UP_REPEAT_GAP_MS = 1;
 const int DOWN_REPEAT_GAP_MS = 30;
+const unsigned long EMERGENCY_DEBOUNCE_MS = 250;
 const int LEVEL_MIN = 0;
 const int LEVEL_MAX = 15;
 const unsigned long ZERO_STALE_MS = 13000;
@@ -38,6 +41,10 @@ bool outputActive = false;
 unsigned long outputUntilMs = 0;
 int activeEventId = 0;
 char activeKind[20] = "none";
+int emergencyButtonState = HIGH;
+int lastEmergencyReading = HIGH;
+unsigned long lastEmergencyChangeMs = 0;
+unsigned long lastEmergencyRunMs = 0;
 
 void queueBleCommand(const char *value) {
   int index = 0;
@@ -126,6 +133,20 @@ void drainBeforePowerOn() {
     pressButton('C');
     delay(DOWN_REPEAT_GAP_MS);
   }
+}
+
+void emergencyDrain() {
+  outputActive = false;
+  strcpy(activeKind, "none");
+  for (int i = 0; i < EMERGENCY_DRAIN_COUNT; i++) {
+    pressButton('C');
+    delay(DOWN_REPEAT_GAP_MS);
+  }
+  currentLevel = -1;
+  currentMode = 1;
+  zeroSinceMs = 0;
+  Serial.print("OK emergency C x");
+  Serial.println(EMERGENCY_DRAIN_COUNT);
 }
 
 void powerOnToZeroAndMode3() {
@@ -295,6 +316,10 @@ void handleCommand(char *line) {
     Serial.println("OK resetstate");
     return;
   }
+  if (strcmp(verb, "drain") == 0) {
+    emergencyDrain();
+    return;
+  }
   if (strcmp(verb, "button") == 0) {
     char buttonName = '\0';
     if (sscanf(line, "%15s %c", verb, &buttonName) == 2) {
@@ -356,7 +381,7 @@ void handleCommand(char *line) {
     return;
   }
 
-  Serial.println("ERR commands: event/status/none/level/cycle/button/hold/mode3/resetstate");
+  Serial.println("ERR commands: event/status/none/level/cycle/button/hold/drain/mode3/resetstate");
 }
 
 void setup() {
@@ -365,6 +390,7 @@ void setup() {
     pinMode(BUTTONS[i].pin, OUTPUT);
     digitalWrite(BUTTONS[i].pin, LOW);
   }
+  pinMode(EMERGENCY_DRAIN_PIN, INPUT_PULLUP);
   delay(600);
   powerOnToZeroAndMode3();
 
@@ -387,10 +413,29 @@ void setup() {
   advertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();
 
-  Serial.println("READY RealShockESP32 BLE A=25 B=33 C=32 mode=3 level=0");
+  Serial.println("READY RealShockESP32 BLE A=32 B=33 C=25 drain=27 mode=3 level=0");
 }
 
 void loop() {
+  int emergencyReading = digitalRead(EMERGENCY_DRAIN_PIN);
+  if (emergencyReading != lastEmergencyReading) {
+    lastEmergencyChangeMs = millis();
+    lastEmergencyReading = emergencyReading;
+  }
+  if (
+    millis() - lastEmergencyChangeMs >= EMERGENCY_DEBOUNCE_MS &&
+    emergencyReading != emergencyButtonState
+  ) {
+    emergencyButtonState = emergencyReading;
+    if (
+      emergencyButtonState == LOW &&
+      millis() - lastEmergencyRunMs >= EMERGENCY_DEBOUNCE_MS
+    ) {
+      lastEmergencyRunMs = millis();
+      emergencyDrain();
+    }
+  }
+
   while (Serial.available() > 0) {
     char c = Serial.read();
     if (c == '\n' || c == '\r') {

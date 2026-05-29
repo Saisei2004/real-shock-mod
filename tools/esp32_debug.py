@@ -115,7 +115,7 @@ def send_line(port, baud, line, wait_seconds):
 
 def main():
     parser = argparse.ArgumentParser(description="ESP32 button controller debug tool")
-    parser.add_argument("command", nargs="*", help="status | none | level N | cycle N [down_gap_ms] | button A | hold C 5000 | event kind intensity duration_ms")
+    parser.add_argument("command", nargs="*", help="status | none | level N | cycle N [down_gap_ms] | drain | button A | hold C 5000 | event kind intensity duration_ms")
     parser.add_argument("--transport", choices=("ble", "serial"), default=os.environ.get("REAL_SHOCK_ESP32_TRANSPORT", "ble"))
     parser.add_argument("--port", default=os.environ.get("REAL_SHOCK_ESP32_SERIAL_PORT", "/dev/cu.usbserial-120"))
     parser.add_argument("--baud", type=int, default=int(os.environ.get("REAL_SHOCK_ESP32_SERIAL_BAUD", "115200")))
