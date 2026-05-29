@@ -48,6 +48,7 @@ RE9_COMMAND_LOG = RUNTIME_DIR / "re9_h6_commands.jsonl"
 RE9_FALTERING_FALLBACK_HP_PERCENT = 16.75
 RE9_ZERO_HP_GRACE_SECONDS = 1.0
 RE9_CHARACTER_CHANGE_GRACE_SECONDS = 1.5
+RE9_HP_CONTEXT_CHANGE_GRACE_SECONDS = 2.0
 FALTERING_FORCE_EVENT_SECONDS = 1.0
 
 COMMAND_PRIORITY = {
@@ -863,6 +864,8 @@ class GameMonitor:
         self.zero_hp_started_at = None
         self.last_character = None
         self.character_changed_at = 0
+        self.last_hp_context_key = None
+        self.hp_context_changed_at = 0
         self.baseline_initialized = False
         self.latest = self.empty_snapshot()
         self.on_change = None
@@ -897,6 +900,7 @@ class GameMonitor:
                 "damage_count": 0,
                 "reader": None,
                 "character": None,
+                "hp_context_key": None,
             },
             "raw": None,
             "updated_at": None,
@@ -943,7 +947,11 @@ class GameMonitor:
             self.previous_damage_count = 0
             self.zero_hp_started_at = None
             self.last_character = None
+            self.last_hp_context_key = None
         character = active_bridge.get("character") if active_bridge else None
+        hp_context_key = active_bridge.get("hp_context_key") if active_bridge else None
+        if hp_context_key is not None:
+            hp_context_key = str(hp_context_key)
         character_changed = bool(character and self.last_character and character != self.last_character)
         if character_changed:
             self.character_changed_at = now
@@ -955,6 +963,17 @@ class GameMonitor:
         if character:
             self.last_character = character
         character_grace = now - self.character_changed_at < RE9_CHARACTER_CHANGE_GRACE_SECONDS
+        hp_context_changed = bool(hp_context_key and self.last_hp_context_key and hp_context_key != self.last_hp_context_key)
+        if hp_context_changed:
+            self.hp_context_changed_at = now
+            self.previous_hp = hp if hp and hp > 0 else None
+            self.previous_damage_count = bridge_damage_count
+            self.death_latched = False
+            self.faltering_started_at = None
+            self.last_faltering_intensity = None
+        if hp_context_key:
+            self.last_hp_context_key = hp_context_key
+        hp_context_grace = now - self.hp_context_changed_at < RE9_HP_CONTEXT_CHANGE_GRACE_SECONDS
 
         raw_dead = False
         if hp is not None and hp <= 0:
@@ -984,7 +1003,7 @@ class GameMonitor:
         elif hp_percent is not None and not active_bridge:
             faltering = hp_percent <= RE9_FALTERING_FALLBACK_HP_PERCENT
 
-        allow_damage = active_bridge and not raw_dead and not character_grace and not character_changed
+        allow_damage = active_bridge and not raw_dead and not character_grace and not character_changed and not hp_context_grace and not hp_context_changed
         if allow_damage and bridge_damage_count > self.previous_damage_count:
             amount = _num(active_bridge.get("last_damage"))
             event = self.command_bus.issue("damage", "re9-bridge", {
@@ -1007,7 +1026,7 @@ class GameMonitor:
             }, ttl=3.0)
             emitted = bool(event)
 
-        if active_bridge and bridge_damage_count > self.previous_damage_count and (raw_dead or character_grace or character_changed):
+        if active_bridge and bridge_damage_count > self.previous_damage_count and (raw_dead or character_grace or character_changed or hp_context_grace or hp_context_changed):
             self.previous_damage_count = bridge_damage_count
 
         if hp is not None and not transient_zero_hp:
@@ -1099,6 +1118,8 @@ class GameMonitor:
                 "reader": active_bridge.get("reader") if active_bridge else None,
                 "character": character,
                 "character_grace": character_grace,
+                "hp_context_key": hp_context_key,
+                "hp_context_grace": hp_context_grace,
                 "zero_hp_age_seconds": round(zero_hp_age, 3) if raw_dead else 0,
                 "transient_zero_hp": transient_zero_hp,
             },

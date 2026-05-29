@@ -1,6 +1,6 @@
 local STATUS_FILE = "re9_hp_web_status.json"
 local CONFIG_FILE = "re9_hp_web_config.json"
-local BRIDGE_VERSION = 6
+local BRIDGE_VERSION = 7
 
 local default_config = {
     enabled = true,
@@ -31,6 +31,7 @@ local default_config = {
 local state = {
     last_write = 0.0,
     last_hp = nil,
+    last_hp_context_key = nil,
     last_damage = nil,
     damage_count = 0,
 }
@@ -249,6 +250,7 @@ local function read_re9_fast_path(reader, diagnostics)
         hp = hp,
         max_hp = max_hp,
         hp_percent = hp_percent,
+        hp_context_key = tostring(context) .. "/" .. tostring(hitpoint),
         reader = "app.CharacterManager.fast_path",
         hp_member = "get_CurrentHitPoint",
         max_hp_member = "get_CurrentMaximumHitPoint",
@@ -343,6 +345,7 @@ local function read_hp()
                         hp = hp,
                         max_hp = max_hp,
                         hp_percent = hp_percent,
+                        hp_context_key = tostring(obj),
                         reader = root_name,
                         hp_member = hp_member,
                         max_hp_member = max_hp_member,
@@ -378,13 +381,21 @@ end
 local function write_status()
     local result = read_hp()
     local hp = result.hp
+    local hp_context_key = result.hp_context_key
+    local context_changed = hp_context_key ~= nil and state.last_hp_context_key ~= nil and hp_context_key ~= state.last_hp_context_key
 
-    if hp ~= nil and state.last_hp ~= nil and hp < state.last_hp then
+    if hp ~= nil and state.last_hp ~= nil and not context_changed and hp < state.last_hp then
         state.last_damage = state.last_hp - hp
         state.damage_count = state.damage_count + 1
     end
     if hp ~= nil then
         state.last_hp = hp
+        if hp_context_key ~= nil then
+            state.last_hp_context_key = hp_context_key
+        end
+    end
+    if context_changed then
+        state.last_damage = nil
     end
 
     dump_status({
@@ -399,6 +410,8 @@ local function write_status()
         hp = result.hp,
         max_hp = result.max_hp,
         hp_percent = result.hp_percent,
+        hp_context_key = result.hp_context_key,
+        hp_context_changed = context_changed,
         low_hp = result.low_hp,
         faltering_low_hp = result.faltering_low_hp,
         low_hp_stage = result.low_hp_stage,
