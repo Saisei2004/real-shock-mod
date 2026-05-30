@@ -2,7 +2,7 @@
 
 ## 2026-05-29
 
-- Added a CAD / 3D print build-notes page with hardware diagrams, a 3D model viewer, ESP32 wiring notes, and README links.
+- Added a CAD / 3D print build-notes page with hardware diagrams, ESP32 wiring notes, and README links.
 - Fixed false `damage` events when starting a new game or changing stages by tracking HP context changes from the REFramework bridge.
 - Added UI mode switches in the Control panel:
   - `Debug max Lv3`

@@ -36,7 +36,7 @@ Changelog: [CHANGELOG.md](CHANGELOG.md)
 
 For the full copy-paste setup flow, from `git clone` to ESP32 BLE configuration, see [this setup guide](docs/SETUP.en.md).
 
-For CAD, 3D printing, the 3D model viewer, and ESP32 wiring notes, see [CAD / 3D print build notes](docs/hardware-cad-3d-print.md).
+For CAD, 3D printing, and ESP32 wiring notes, see [CAD / 3D print build notes](docs/hardware-cad-3d-print.md).
 
 ## Main Parts Used
 
