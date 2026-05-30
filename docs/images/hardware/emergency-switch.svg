@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="480" viewBox="0 0 1080 480" role="img" aria-label="Emergency switch wiring">
+  <rect width="1080" height="480" fill="#07100d"/>
+  <style>
+    text{font-family:Arial,'Hiragino Sans',sans-serif}
+    .title{fill:#e8f4ee;font-size:30px;font-weight:800}
+    .label{fill:#e8f4ee;font-size:22px;font-weight:800}
+    .sub{fill:#9fb0a8;font-size:16px}
+    .box{fill:#101c18;stroke:#86f0a8;stroke-width:2;rx:14}
+    .switch{fill:#241812;stroke:#e3b45a;stroke-width:3;rx:18}
+    .wire{stroke:#7aa9d6;stroke-width:5;fill:none}
+  </style>
+  <text x="54" y="58" class="title">Emergency drain switch</text>
+  <rect x="130" y="150" width="260" height="140" class="box"/>
+  <text x="260" y="210" text-anchor="middle" class="label">ESP32</text>
+  <text x="260" y="244" text-anchor="middle" class="sub">GPIO27 INPUT_PULLUP</text>
+  <rect x="560" y="150" width="220" height="140" class="switch"/>
+  <text x="670" y="210" text-anchor="middle" class="label">Tact Switch</text>
+  <text x="670" y="244" text-anchor="middle" class="sub">2-pin or opposite legs</text>
+  <path d="M390 205 H560" class="wire"/>
+  <path d="M780 235 H930" class="wire"/>
+  <text x="950" y="242" class="label">GND</text>
+  <text x="540" y="390" text-anchor="middle" class="sub">Pressed = LOW. Do not connect this switch to 3V3.</text>
+</svg>

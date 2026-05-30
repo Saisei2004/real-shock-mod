@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="500" viewBox="0 0 1080 500" role="img" aria-label="3D printer workflow">
+  <rect width="1080" height="500" fill="#07100d"/>
+  <defs>
+    <style>
+      text{font-family:Arial,'Hiragino Sans',sans-serif}
+      .box{fill:#101c18;stroke:#86f0a8;stroke-width:2;rx:14}
+      .txt{fill:#e8f4ee;font-size:23px;font-weight:800}
+      .sub{fill:#9fb0a8;font-size:16px}
+      .line{stroke:#86f0a8;stroke-width:4;fill:none;marker-end:url(#arrow)}
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#86f0a8"/>
+    </marker>
+  </defs>
+  <rect x="50" y="160" width="190" height="120" class="box"/>
+  <text x="145" y="214" text-anchor="middle" class="txt">CAD</text>
+  <text x="145" y="244" text-anchor="middle" class="sub">case / holes</text>
+  <rect x="310" y="160" width="190" height="120" class="box"/>
+  <text x="405" y="214" text-anchor="middle" class="txt">STL</text>
+  <text x="405" y="244" text-anchor="middle" class="sub">export</text>
+  <rect x="570" y="160" width="190" height="120" class="box"/>
+  <text x="665" y="214" text-anchor="middle" class="txt">Slicer</text>
+  <text x="665" y="244" text-anchor="middle" class="sub">orientation</text>
+  <rect x="830" y="160" width="190" height="120" class="box"/>
+  <text x="925" y="214" text-anchor="middle" class="txt">3D Print</text>
+  <text x="925" y="244" text-anchor="middle" class="sub">fit check</text>
+  <path d="M242 220 H306" class="line"/>
+  <path d="M502 220 H566" class="line"/>
+  <path d="M762 220 H826" class="line"/>
+  <text x="540" y="398" text-anchor="middle" class="sub">Print small, test the fit, then adjust holes and cable paths.</text>
+</svg>

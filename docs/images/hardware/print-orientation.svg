@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="520" viewBox="0 0 1080 520" role="img" aria-label="Print orientation diagram">
+  <rect width="1080" height="520" fill="#07100d"/>
+  <style>
+    text{font-family:Arial,'Hiragino Sans',sans-serif}
+    .title{fill:#e8f4ee;font-size:30px;font-weight:800}
+    .label{fill:#e8f4ee;font-size:20px;font-weight:700}
+    .sub{fill:#9fb0a8;font-size:16px}
+    .bed{fill:#15231f;stroke:#86f0a8;stroke-width:2}
+    .case{fill:#263b34;stroke:#7aa9d6;stroke-width:3}
+    .hole{fill:#07100d;stroke:#e3b45a;stroke-width:2}
+  </style>
+  <text x="54" y="58" class="title">Recommended print orientation</text>
+  <rect x="90" y="390" width="900" height="36" class="bed"/>
+  <text x="540" y="460" text-anchor="middle" class="sub">Put the widest flat face on the bed when possible.</text>
+  <path d="M260 220 L450 160 L810 250 L630 335 Z" class="case"/>
+  <rect x="510" y="222" width="150" height="60" class="hole"/>
+  <circle cx="725" cy="260" r="30" class="hole"/>
+  <text x="585" y="210" text-anchor="middle" class="label">USB opening</text>
+  <text x="725" y="320" text-anchor="middle" class="label">tact hole</text>
+  <text x="540" y="112" text-anchor="middle" class="sub">Prioritize clean openings and cable clearance over decorative surfaces.</text>
+</svg>

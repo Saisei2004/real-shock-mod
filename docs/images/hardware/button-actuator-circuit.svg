@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="560" viewBox="0 0 1080 560" role="img" aria-label="Button actuator circuit">
+  <rect width="1080" height="560" fill="#07100d"/>
+  <style>
+    text{font-family:Arial,'Hiragino Sans',sans-serif}
+    .title{fill:#e8f4ee;font-size:30px;font-weight:800}
+    .label{fill:#e8f4ee;font-size:20px;font-weight:700}
+    .sub{fill:#9fb0a8;font-size:16px}
+    .line{stroke:#86f0a8;stroke-width:4;fill:none}
+    .wire{stroke:#7aa9d6;stroke-width:4;fill:none}
+    .part{fill:#101c18;stroke:#e3b45a;stroke-width:2;rx:10}
+  </style>
+  <text x="54" y="58" class="title">One button driver repeated for A / B / C</text>
+  <text x="120" y="140" class="label">ESP32 GPIO</text>
+  <path d="M250 134 H380" class="line"/>
+  <rect x="380" y="104" width="120" height="60" class="part"/>
+  <text x="440" y="142" text-anchor="middle" class="label">1kΩ</text>
+  <path d="M500 134 H620" class="line"/>
+  <circle cx="665" cy="134" r="34" fill="#101c18" stroke="#86f0a8" stroke-width="3"/>
+  <text x="665" y="142" text-anchor="middle" class="label">NPN</text>
+  <path d="M665 168 V320" class="wire"/>
+  <path d="M610 320 H720" class="wire"/>
+  <text x="742" y="327" class="label">GND</text>
+  <path d="M700 120 H860" class="line"/>
+  <path d="M700 150 H860" class="line"/>
+  <rect x="860" y="92" width="150" height="88" class="part"/>
+  <text x="935" y="130" text-anchor="middle" class="label">Device</text>
+  <text x="935" y="156" text-anchor="middle" class="sub">button pads</text>
+  <path d="M575 134 V250 H500" class="wire"/>
+  <rect x="380" y="220" width="120" height="60" class="part"/>
+  <text x="440" y="258" text-anchor="middle" class="label">10kΩ</text>
+  <path d="M440 280 V320 H610" class="wire"/>
+  <text x="540" y="500" text-anchor="middle" class="sub">GPIO HIGH turns the transistor on and behaves like a short button press.</text>
+</svg>

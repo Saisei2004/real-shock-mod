@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="620" viewBox="0 0 1080 620" role="img" aria-label="ESP32 pin map">
+  <rect width="1080" height="620" fill="#07100d"/>
+  <style>
+    text{font-family:Arial,'Hiragino Sans',sans-serif}
+    .title{fill:#e8f4ee;font-size:30px;font-weight:800}
+    .board{fill:#123028;stroke:#86f0a8;stroke-width:3;rx:18}
+    .pin{fill:#07100d;stroke:#9fb0a8;stroke-width:2}
+    .label{fill:#e8f4ee;font-size:22px;font-weight:800}
+    .sub{fill:#9fb0a8;font-size:16px}
+    .wireA{stroke:#e3b45a;stroke-width:5;fill:none}
+    .wireB{stroke:#7aa9d6;stroke-width:5;fill:none}
+    .wireC{stroke:#86f0a8;stroke-width:5;fill:none}
+    .wireD{stroke:#f06f6f;stroke-width:5;fill:none}
+  </style>
+  <text x="54" y="58" class="title">ESP32 pin assignment</text>
+  <rect x="390" y="100" width="300" height="420" class="board"/>
+  <text x="540" y="150" text-anchor="middle" class="label">ESP32</text>
+  <rect x="500" y="480" width="80" height="24" fill="#07100d" stroke="#9fb0a8" stroke-width="2"/>
+  <text x="540" y="506" text-anchor="middle" class="sub">USB</text>
+  <circle cx="420" cy="220" r="12" class="pin"/><text x="350" y="227" text-anchor="end" class="label">GPIO33 A</text>
+  <circle cx="420" cy="285" r="12" class="pin"/><text x="350" y="292" text-anchor="end" class="label">GPIO32 B</text>
+  <circle cx="420" cy="350" r="12" class="pin"/><text x="350" y="357" text-anchor="end" class="label">GPIO25 C</text>
+  <circle cx="660" cy="285" r="12" class="pin"/><text x="730" y="292" class="label">GPIO27 drain</text>
+  <path d="M420 220 H230" class="wireA"/>
+  <path d="M420 285 H230" class="wireB"/>
+  <path d="M420 350 H230" class="wireC"/>
+  <path d="M660 285 H850" class="wireD"/>
+  <text x="540" y="575" text-anchor="middle" class="sub">A/B/C go to transistor button drivers. GPIO27 goes to a tact switch and GND.</text>
+</svg>

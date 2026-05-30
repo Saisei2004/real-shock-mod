@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="560" viewBox="0 0 1080 560" role="img" aria-label="CAD parts diagram">
+  <rect width="1080" height="560" fill="#07100d"/>
+  <style>
+    text{font-family:Arial,'Hiragino Sans',sans-serif}
+    .title{fill:#e8f4ee;font-size:30px;font-weight:800}
+    .label{fill:#e8f4ee;font-size:21px;font-weight:700}
+    .note{fill:#9fb0a8;font-size:16px}
+    .panel{fill:#101c18;stroke:#86f0a8;stroke-width:2;rx:16}
+    .part{fill:#162822;stroke:#7aa9d6;stroke-width:2;rx:10}
+    .slot{fill:#07100d;stroke:#e3b45a;stroke-width:2;rx:8}
+  </style>
+  <text x="54" y="58" class="title">CAD parts to model</text>
+  <rect x="60" y="100" width="960" height="380" class="panel"/>
+  <rect x="130" y="170" width="330" height="210" class="part"/>
+  <rect x="180" y="220" width="230" height="110" class="slot"/>
+  <text x="295" y="280" text-anchor="middle" class="label">ESP32 pocket</text>
+  <text x="295" y="410" text-anchor="middle" class="note">USB port and jumper clearance</text>
+  <rect x="540" y="170" width="360" height="210" class="part"/>
+  <circle cx="632" cy="275" r="42" class="slot"/>
+  <rect x="720" y="230" width="120" height="90" class="slot"/>
+  <text x="720" y="410" text-anchor="middle" class="note">Emergency switch + cable channel</text>
+  <text x="540" y="520" class="note">Keep the CAD simple: fixed ESP32, cable relief, and a reachable emergency switch.</text>
+</svg>
