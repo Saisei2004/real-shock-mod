@@ -36,7 +36,22 @@ English version: [README.en.md](README.en.md)
 
 Git cloneから起動、ESP32 BLE設定までの詳しい手順は [こちら](docs/SETUP.md)。
 
-CAD、3Dプリント、ESP32配線まわりの製作メモは [CAD / 3Dプリント製作ノート](docs/hardware-cad-3d-print.md) にまとめています。
+## CAD / 3Dプリント製作ノート
+
+外部デバイスを収めるためのケースも作っています。Fusionで設計したケース、プリント用STL、スクリーンショット、印刷設定は [CAD / 3Dプリント製作ノート](docs/hardware-cad-3d-print.md) にまとめています。
+
+| 外観 | 上面レイアウト |
+|---|---|
+| ![RE:AL SHOCK BELT case CAD isometric](docs/images/hardware/real-shock-belt-case/case-iso-top-right.png) | ![RE:AL SHOCK BELT case top layout](docs/images/hardware/real-shock-belt-case/case-top.png) |
+
+主なモデル:
+
+| ファイル | 内容 |
+|---|---|
+| [device_case.f3d](docs/models/real-shock-belt-case/device_case.f3d) | Fusion編集用データ |
+| [CASE_BASE_print.stl](docs/models/real-shock-belt-case/CASE_BASE_print.stl) | ケース本体 |
+| [CASE_LID_print.stl](docs/models/real-shock-belt-case/CASE_LID_print.stl) | 上蓋 |
+| [EMERGENCY_BUTTON_PLUNGER_print.stl](docs/models/real-shock-belt-case/EMERGENCY_BUTTON_PLUNGER_print.stl) | 緊急ボタン用プランジャ |
 
 ## 今回使った主な材料
 
