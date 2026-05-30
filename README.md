@@ -36,7 +36,7 @@ English version: [README.en.md](README.en.md)
 
 Git cloneから起動、ESP32 BLE設定までの詳しい手順は [こちら](docs/SETUP.md)。
 
-CAD、3Dプリント、ESP32配線まわりの製作メモは [CAD / 3Dプリント製作ノート](docs/hardware-cad-3d-print.md) にまとめています。
+CAD、3Dプリント、3Dモデルビューア、ESP32配線まわりの製作メモは [CAD / 3Dプリント製作ノート](docs/hardware-cad-3d-print.md) にまとめています。
 
 ## 今回使った主な材料
 

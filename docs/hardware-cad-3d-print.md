@@ -10,6 +10,19 @@
 
 PC側のMODはゲーム状態と心拍データからイベントを作り、ESP32へ `event <kind> <level> <duration_ms> <id>` を送ります。ESP32はそれを外部デバイスのA/B/Cボタン操作に変換します。
 
+## 3Dモデルビューア
+
+![3D viewer screenshot](images/hardware/3d-viewer-screenshot.jpg)
+
+ブラウザで回転・ズームして確認できる3Dビューアを用意しています。
+
+| リンク | 内容 |
+|---|---|
+| [3Dビューアを開く](hardware-3d-viewer.html) | `<model-viewer>` でGLBを埋め込んだページ |
+| [GLBモデルを直接開く](models/real-shock-esp32-case-concept.glb) | ESP32ケース概念モデル |
+
+このモデルは実機採寸前の説明用です。最終的なCADデータを作ったら、同じ場所に実モデルを書き出して差し替えます。
+
 ## CADで作るもの
 
 ![cad parts](images/hardware/cad-parts.svg)
@@ -115,4 +128,3 @@ A/B/CをPCのキーボードから押す場合:
 | 使用した3Dプリンターの写真 | `docs/images/hardware/` |
 | ブレッドボード配線写真 | `docs/images/hardware/` |
 | 完成ケース外観 | `docs/images/hardware/` |
-
